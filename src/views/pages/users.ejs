@@ -1,0 +1,265 @@
+<link rel="stylesheet" href="/css/users.css">
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h5 class="fw-bold mb-0"><i class="bi bi-people me-2"></i>Manajemen Pengguna</h5>
+  <button class="btn btn-primary btn-sm px-3" onclick="openModal()">
+    <i class="bi bi-plus-lg me-1"></i> Tambah Pengguna
+  </button>
+</div>
+
+<div id="alert-top" class="alert d-none"></div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white d-flex align-items-center justify-content-between py-3">
+    <div class="input-group" style="max-width:280px">
+      <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+      <input type="text" class="form-control bg-light border-start-0" id="search-input"
+             placeholder="Cari nama, email, NRP..." oninput="filterTable()"/>
+    </div>
+    <span class="text-muted small" id="user-count"></span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="text-muted small fw-semibold ps-3">#</th>
+            <th class="text-muted small fw-semibold">NRP / NIP</th>
+            <th class="text-muted small fw-semibold">Nama</th>
+            <th class="text-muted small fw-semibold">Email</th>
+            <th class="text-muted small fw-semibold">Role</th>
+            <th class="text-muted small fw-semibold">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="user-table-body">
+          <tr><td colspan="6" class="text-center text-muted py-4">Memuat data...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tambah/Edit -->
+<div class="modal fade" id="modalUser" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-bottom">
+        <h6 class="modal-title fw-bold" id="modal-title-text">Tambah Pengguna</h6>
+        <button type="button" class="btn-close" onclick="closeModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div id="modal-alert" class="alert d-none"></div>
+        <div class="mb-3">
+          <label class="form-label small fw-medium">NRP / NIP</label>
+          <input type="text" class="form-control" id="f-nrp" placeholder="Masukkan NRP atau NIP"/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-medium">Nama Lengkap</label>
+          <input type="text" class="form-control" id="f-name" placeholder="Masukkan nama lengkap"/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-medium">Email</label>
+          <input type="email" class="form-control" id="f-email" placeholder="email@lab.com"/>
+        </div>
+        <div class="mb-3" id="f-password-group">
+          <label class="form-label small fw-medium">Password</label>
+          <input type="password" class="form-control" id="f-password" placeholder="Minimal 6 karakter"/>
+        </div>
+        <div class="mb-1">
+          <label class="form-label small fw-medium">Role</label>
+          <select class="form-select" id="f-role">
+            <option value="">-- Pilih Role --</option>
+            <option value="admin">Administrator</option>
+            <option value="kepala_lab">Kepala Laboratorium</option>
+            <option value="kaprodi">Ketua Program Studi</option>
+            <option value="staf_admin">Staf Administrasi</option>
+            <option value="staf_lab">Staf Laboratorium</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer border-top">
+        <button class="btn btn-light btn-sm" onclick="closeModal()">Batal</button>
+        <button class="btn btn-primary btn-sm px-4" onclick="saveUser()">Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Hapus -->
+<div class="modal fade" id="modalDelete" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-bottom">
+        <h6 class="modal-title fw-bold">Hapus Pengguna</h6>
+        <button type="button" class="btn-close" onclick="closeDeleteModal()"></button>
+      </div>
+      <div class="modal-body small text-muted">
+        Yakin ingin menghapus <strong id="delete-name" class="text-dark"></strong>?
+        Tindakan ini tidak dapat dibatalkan.
+      </div>
+      <div class="modal-footer border-top">
+        <button class="btn btn-light btn-sm" onclick="closeDeleteModal()">Batal</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDelete()">Hapus</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const token   = localStorage.getItem('token');
+  const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+  const roleLabel = {
+    admin: 'Administrator', kepala_lab: 'Kepala Lab',
+    kaprodi: 'Kaprodi', staf_admin: 'Staf Admin', staf_lab: 'Staf Lab'
+  };
+  const roleBadge = {
+    admin: 'primary', kepala_lab: 'success',
+    kaprodi: 'purple', staf_admin: 'warning', staf_lab: 'danger'
+  };
+  const roleColor = {
+    admin: 'primary', kepala_lab: 'success',
+    kaprodi: 'secondary', staf_admin: 'warning', staf_lab: 'danger'
+  };
+
+  let allUsers = [], editId = null, deleteId = null;
+  let bsModal, bsDeleteModal;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    bsModal       = new bootstrap.Modal(document.getElementById('modalUser'),   { backdrop: 'static' });
+    bsDeleteModal = new bootstrap.Modal(document.getElementById('modalDelete'), { backdrop: 'static' });
+    loadUsers();
+  });
+
+  async function loadUsers() {
+    try {
+      const res  = await fetch('/api/users', { headers });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      allUsers = data.data;
+      renderTable(allUsers);
+      document.getElementById('user-count').textContent = allUsers.length + ' pengguna';
+    } catch (err) {
+      showAlert('alert-top', 'Gagal memuat data: ' + err.message, 'danger');
+    }
+  }
+
+  function renderTable(users) {
+    const tbody = document.getElementById('user-table-body');
+    if (!users.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Tidak ada data pengguna</td></tr>';
+      return;
+    }
+    tbody.innerHTML = users.map((u, i) => `
+      <tr>
+        <td class="ps-3 text-muted small">${i + 1}</td>
+        <td><code class="small">${u.nrp_nip}</code></td>
+        <td class="fw-medium">${u.name}</td>
+        <td class="text-muted small">${u.email}</td>
+        <td><span class="badge bg-${roleColor[u.role]}-subtle text-${roleColor[u.role]} rounded-pill px-2">
+          ${roleLabel[u.role] || u.role}
+        </span></td>
+        <td>
+          <button class="btn btn-sm btn-light me-1" onclick="openEdit('${u._id}')">
+            <i class="bi bi-pencil text-primary"></i>
+          </button>
+          <button class="btn btn-sm btn-light" onclick="openDelete('${u._id}', '${u.name}')">
+            <i class="bi bi-trash text-danger"></i>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function filterTable() {
+    const q = document.getElementById('search-input').value.toLowerCase();
+    renderTable(allUsers.filter(u =>
+      u.name.toLowerCase().includes(q) ||
+      u.email.toLowerCase().includes(q) ||
+      u.nrp_nip.toLowerCase().includes(q)
+    ));
+  }
+
+  function openModal() {
+    editId = null;
+    document.getElementById('modal-title-text').textContent = 'Tambah Pengguna';
+    document.getElementById('f-password-group').style.display = 'block';
+    ['f-nrp','f-name','f-email','f-password'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-role').value = '';
+    hideAlert('modal-alert');
+    bsModal.show();
+  }
+
+  function openEdit(id) {
+    const u = allUsers.find(u => u._id === id);
+    if (!u) return;
+    editId = id;
+    document.getElementById('modal-title-text').textContent = 'Edit Pengguna';
+    document.getElementById('f-password-group').style.display = 'none';
+    document.getElementById('f-nrp').value   = u.nrp_nip;
+    document.getElementById('f-name').value  = u.name;
+    document.getElementById('f-email').value = u.email;
+    document.getElementById('f-role').value  = u.role;
+    hideAlert('modal-alert');
+    bsModal.show();
+  }
+
+  function closeModal()       { bsModal.hide(); }
+  function closeDeleteModal() { bsDeleteModal.hide(); }
+
+  async function saveUser() {
+    const nrp_nip  = document.getElementById('f-nrp').value.trim();
+    const name     = document.getElementById('f-name').value.trim();
+    const email    = document.getElementById('f-email').value.trim();
+    const password = document.getElementById('f-password').value;
+    const role     = document.getElementById('f-role').value;
+
+    if (!nrp_nip || !name || !email || !role)
+      return showAlert('modal-alert', 'Semua field wajib diisi', 'danger');
+    if (!editId && !password)
+      return showAlert('modal-alert', 'Password wajib diisi', 'danger');
+
+    const body   = editId ? { nrp_nip, name, email, role } : { nrp_nip, name, email, password, role };
+    const url    = editId ? `/api/users/${editId}` : '/api/users';
+    const method = editId ? 'PUT' : 'POST';
+
+    try {
+      const res  = await fetch(url, { method, headers, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      closeModal();
+      showAlert('alert-top', data.message, 'success');
+      loadUsers();
+    } catch (err) {
+      showAlert('modal-alert', err.message, 'danger');
+    }
+  }
+
+  function openDelete(id, name) {
+    deleteId = id;
+    document.getElementById('delete-name').textContent = name;
+    bsDeleteModal.show();
+  }
+
+  async function confirmDelete() {
+    try {
+      const res  = await fetch(`/api/users/${deleteId}`, { method: 'DELETE', headers });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      closeDeleteModal();
+      showAlert('alert-top', data.message, 'success');
+      loadUsers();
+    } catch (err) {
+      showAlert('alert-top', err.message, 'danger');
+    }
+  }
+
+  function showAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.className = `alert alert-${type}`;
+    if (type === 'success') setTimeout(() => el.className = 'alert d-none', 3000);
+  }
+  function hideAlert(id) {
+    document.getElementById(id).className = 'alert d-none';
+  }
+</script>

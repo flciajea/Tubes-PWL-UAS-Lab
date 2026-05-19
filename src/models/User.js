@@ -35,4 +35,16 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("User", userSchema);
+// Hash password sebelum simpan
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next();
+  this.password = await bcrypt.hash(this.password, 12);
+  next();
+});
+ 
+// Method cek password
+userSchema.methods.correctPassword = async function (candidate, hashed) {
+  return bcrypt.compare(candidate, hashed);
+};
+ 
+module.exports = mongoose.model('User', userSchema);

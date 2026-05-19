@@ -38,6 +38,9 @@ app.get('/login', (req, res) => {
 app.get('/dashboard', (req, res) => {
   res.render('pages/dashboard', { title: 'Dashboard', page: 'dashboard' });
 });
+app.get('/users', (req, res) => {
+  res.render('pages/users', { title: 'Manajemen Pengguna', page: 'users' });
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
