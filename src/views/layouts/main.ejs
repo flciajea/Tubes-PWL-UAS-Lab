@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title><%= title %> — Capstone Lab Assets</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"/>
+  <style>
+    * { box-sizing: border-box; }
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; margin: 0; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      position: fixed; top: 0; left: 0;
+      width: 240px; height: 100vh;
+      background: #1a202c;
+      display: flex; flex-direction: column;
+      z-index: 100; transition: width 0.2s;
+    }
+    .sidebar-brand {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .sidebar-brand .brand-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: #1a56db;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .sidebar-brand .brand-icon i { color: white; font-size: 18px; }
+    .sidebar-brand .brand-name {
+      color: white; font-weight: 700;
+      font-size: 0.95rem; line-height: 1.2;
+    }
+    .sidebar-brand .brand-name span {
+      display: block; font-size: 0.7rem;
+      font-weight: 400; color: #a0aec0;
+    }
+    .sidebar-menu { flex: 1; padding: 1rem 0; overflow-y: auto; }
+    .menu-label {
+      font-size: 0.65rem; font-weight: 600;
+      color: #4a5568; text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.5rem 1.5rem 0.25rem;
+    }
+    .menu-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 0.6rem 1.5rem;
+      color: #a0aec0; text-decoration: none;
+      font-size: 0.875rem; border-radius: 0;
+      transition: all 0.15s;
+      border-left: 3px solid transparent;
+    }
+    .menu-item:hover { color: white; background: rgba(255,255,255,0.05); }
+    .menu-item.active {
+      color: white; background: rgba(26,86,219,0.2);
+      border-left-color: #1a56db;
+    }
+    .menu-item i { font-size: 16px; width: 18px; text-align: center; }
+    .sidebar-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .user-info {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .user-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: #1a56db;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 600; color: white;
+      flex-shrink: 0;
+    }
+    .user-name { color: white; font-size: 0.8rem; font-weight: 500; }
+    .user-role { color: #718096; font-size: 0.7rem; }
+    .btn-logout {
+      margin-top: 0.75rem; width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #a0aec0; font-size: 0.8rem;
+      border-radius: 8px; padding: 0.4rem;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .btn-logout:hover { background: rgba(220,38,38,0.2); color: #fc8181; border-color: rgba(220,38,38,0.3); }
+
+    /* ── Main Content ── */
+    .main-wrapper { margin-left: 240px; min-height: 100vh; }
+    .topbar {
+      background: white; height: 60px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex; align-items: center;
+      padding: 0 1.5rem;
+      justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-title { font-size: 1rem; font-weight: 600; color: #1a202c; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .content-area { padding: 1.5rem; }
+
+    /* Custom scrollbar sidebar */
+.sidebar-menu::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-menu::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 99px;
+}
+.sidebar-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+/* Firefox */
+.sidebar-menu {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
+}
+
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon"><i class="bi bi-building"></i></div>
+    <div class="brand-name">Lab Assets<span>Management System</span></div>
+  </div>
+
+<nav class="sidebar-menu">
+  <div class="menu-label">Utama</div>
+  <a href="/dashboard" class="menu-item <%= (locals.page === 'dashboard') ? 'active' : '' %>">
+    <i class="bi bi-grid-1x2"></i> Dashboard
+  </a>
+
+  <div class="menu-label mt-2">Master Data</div>
+  <a href="/users" class="menu-item <%= (locals.page === 'users') ? 'active' : '' %>">
+    <i class="bi bi-people"></i> Pengguna
+  </a>
+  <a href="/rooms" class="menu-item <%= (locals.page === 'rooms') ? 'active' : '' %>">
+    <i class="bi bi-door-open"></i> Ruangan
+  </a>
+
+  <div class="menu-label mt-2">Pengadaan</div>
+  <a href="/procurement" class="menu-item <%= (locals.page === 'procurement') ? 'active' : '' %>">
+    <i class="bi bi-cart-plus"></i> Draf Pengadaan
+  </a>
+
+  <div class="menu-label mt-2">Aset & BHP</div>
+  <a href="/inventories" class="menu-item <%= (locals.page === 'inventories') ? 'active' : '' %>">
+    <i class="bi bi-box-seam"></i> Inventaris
+  </a>
+  <a href="/bhp" class="menu-item <%= (locals.page === 'bhp') ? 'active' : '' %>">
+    <i class="bi bi-archive"></i> Stok BHP
+  </a>
+
+  <div class="menu-label mt-2">Maintenance</div>
+  <a href="/maintenance" class="menu-item <%= (locals.page === 'maintenance') ? 'active' : '' %>">
+    <i class="bi bi-tools"></i> Log Maintenance
+  </a>
+</nav>
+
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="sidebar-avatar">A</div>
+      <div>
+        <div class="user-name" id="sidebar-name">Loading...</div>
+        <div class="user-role" id="sidebar-role">-</div>
+      </div>
+    </div>
+    <button class="btn-logout" onclick="logout()">
+      <i class="bi bi-box-arrow-left"></i> Keluar
+    </button>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main-wrapper">
+  <div class="topbar">
+    <span class="topbar-title"><%= title %></span>
+    <div class="topbar-right">
+      <span style="font-size:0.8rem; color:#718096;" id="topbar-name"></span>
+    </div>
+  </div>
+  <div class="content-area">
+   <div class="content-area">
+  <%- body %>
+</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Load user info dari localStorage
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (!user) {
+    window.location.href = '/login';
+  } else {
+    const roleLabel = {
+      admin: 'Administrator',
+      kepala_lab: 'Kepala Laboratorium',
+      kaprodi: 'Ketua Program Studi',
+      staf_admin: 'Staf Administrasi',
+      staf_lab: 'Staf Laboratorium'
+    };
+    document.getElementById('sidebar-name').textContent = user.name;
+    document.getElementById('sidebar-role').textContent = roleLabel[user.role] || user.role;
+    document.getElementById('sidebar-avatar').textContent = user.name.charAt(0).toUpperCase();
+    document.getElementById('topbar-name').textContent = user.name;
+  }
+
+  function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+  }
+</script>
+</body>
+</html>

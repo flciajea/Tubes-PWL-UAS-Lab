@@ -1,0 +1,81 @@
+<% locals.page = 'dashboard' %>
+
+<style>
+  .stat-card {
+    background: white; border-radius: 12px;
+    padding: 1.25rem; border: 1px solid #e2e8f0;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .stat-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; margin-bottom: 4px;
+  }
+  .bg-primary-soft { background: #ebf4ff; }
+  .bg-success-soft { background: #f0fff4; }
+  .bg-warning-soft { background: #fffbeb; }
+  .bg-info-soft    { background: #e0f2fe; }
+  .stat-val  { font-size: 1.75rem; font-weight: 700; color: #1a202c; }
+  .stat-label { font-size: 0.8rem; color: #718096; }
+  .welcome-card {
+    background: linear-gradient(135deg, #1a56db, #1e40af);
+    border-radius: 12px; padding: 1.5rem;
+    color: white; margin-bottom: 1.5rem;
+  }
+</style>
+
+<div class="welcome-card">
+  <h5 class="mb-1">Selamat datang, <span id="welcome-name">-</span> 👋</h5>
+  <p class="mb-0" style="opacity:0.8; font-size:0.875rem;">
+    Sistem Manajemen Aset Laboratorium — Capstone PWL
+  </p>
+</div>
+
+<div class="row g-3">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-primary-soft"><i class="bi bi-people text-primary"></i></div>
+      <div class="stat-val" id="stat-users">-</div>
+      <div class="stat-label">Total Pengguna</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-success-soft"><i class="bi bi-box-seam text-success"></i></div>
+      <div class="stat-val" id="stat-inv">-</div>
+      <div class="stat-label">Total Inventaris</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-warning-soft"><i class="bi bi-archive text-warning"></i></div>
+      <div class="stat-val" id="stat-bhp">-</div>
+      <div class="stat-label">Item BHP</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-info-soft"><i class="bi bi-cart-plus text-info"></i></div>
+      <div class="stat-val" id="stat-proc">-</div>
+      <div class="stat-label">Draf Pengadaan</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (!user) {
+    window.location.href = '/login';
+  } else {
+    document.getElementById('welcome-name').textContent = user.name;
+  }
+
+  // Fetch stats
+  const token = localStorage.getItem('token');
+  const headers = { 'Authorization': 'Bearer ' + token };
+
+  fetch('/api/users', { headers })
+    .then(r => r.json())
+    .then(d => document.getElementById('stat-users').textContent = d.data?.length ?? '-')
+    .catch(() => {});
+</script>
