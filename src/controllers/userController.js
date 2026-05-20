@@ -24,23 +24,28 @@ const getUserById = async (req, res) => {
 
 const createUser = async (req, res) => {
   try {
+    console.log('createUser called', req.body);
     const { nrp_nip, name, email, password, role } = req.body;
 
+    console.log('checking existing user...');
     const existingUser = await User.findOne({ $or: [{ email }, { nrp_nip }] });
     if (existingUser) {
       return res.status(400).json({ message: "Email atau NRP/NIP sudah terdaftar" });
     }
 
+    console.log('hashing password...');
     const salt = await bcrypt.genSalt(10);
+    console.log('salt:', salt);
     const hashedPassword = await bcrypt.hash(password, salt);
+    console.log('hashed!');
 
+    console.log('creating user...');
     const user = await User.create({
-      nrp_nip,
-      name,
-      email,
+      nrp_nip, name, email,
       password: hashedPassword,
       role,
     });
+    console.log('user created:', user._id);
 
     res.status(201).json({
       message: "User berhasil dibuat",
@@ -53,6 +58,7 @@ const createUser = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error('ERROR di createUser:', error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

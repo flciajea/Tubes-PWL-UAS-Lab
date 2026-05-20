@@ -1,0 +1,217 @@
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h5 class="fw-bold mb-0"><i class="bi bi-door-open me-2"></i>Manajemen Ruangan</h5>
+  <button class="btn btn-primary btn-sm px-3" onclick="openModal()">
+    <i class="bi bi-plus-lg me-1"></i> Tambah Ruangan
+  </button>
+</div>
+
+<div id="alert-top" class="alert d-none"></div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white d-flex align-items-center justify-content-between py-3">
+    <div class="input-group" style="max-width:280px">
+      <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+      <input type="text" class="form-control bg-light border-start-0" id="search-input"
+             placeholder="Cari nama ruangan..." oninput="filterTable()"/>
+    </div>
+    <span class="text-muted small" id="room-count"></span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="text-muted small fw-semibold ps-3">#</th>
+            <th class="text-muted small fw-semibold">Nama Ruangan</th>
+            <th class="text-muted small fw-semibold">Lokasi</th>
+            <th class="text-muted small fw-semibold">Dibuat</th>
+            <th class="text-muted small fw-semibold">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="room-table-body">
+          <tr><td colspan="5" class="text-center text-muted py-4">Memuat data...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tambah/Edit -->
+<div class="modal fade" id="modalRoom" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-bottom">
+        <h6 class="modal-title fw-bold" id="modal-title-text">Tambah Ruangan</h6>
+        <button type="button" class="btn-close" onclick="closeModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div id="modal-alert" class="alert d-none"></div>
+        <div class="mb-3">
+          <label class="form-label small fw-medium">Nama Ruangan</label>
+          <input type="text" class="form-control" id="f-name" placeholder="Contoh: Lab Komputer 1"/>
+        </div>
+        <div class="mb-1">
+          <label class="form-label small fw-medium">Lokasi <span class="text-muted">(opsional)</span></label>
+          <input type="text" class="form-control" id="f-location" placeholder="Contoh: Gedung A Lantai 2"/>
+        </div>
+      </div>
+      <div class="modal-footer border-top">
+        <button class="btn btn-light btn-sm" onclick="closeModal()">Batal</button>
+        <button class="btn btn-primary btn-sm px-4" onclick="saveRoom()">Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Hapus -->
+<div class="modal fade" id="modalDelete" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-bottom">
+        <h6 class="modal-title fw-bold">Hapus Ruangan</h6>
+        <button type="button" class="btn-close" onclick="closeDeleteModal()"></button>
+      </div>
+      <div class="modal-body small text-muted">
+        Yakin ingin menghapus ruangan <strong id="delete-name" class="text-dark"></strong>?
+        Tindakan ini tidak dapat dibatalkan.
+      </div>
+      <div class="modal-footer border-top">
+        <button class="btn btn-light btn-sm" onclick="closeDeleteModal()">Batal</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDelete()">Hapus</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const token   = localStorage.getItem('token');
+  const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+
+  let allRooms = [], editId = null, deleteId = null;
+  let bsModal, bsDeleteModal;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    bsModal       = new bootstrap.Modal(document.getElementById('modalRoom'),   { backdrop: 'static' });
+    bsDeleteModal = new bootstrap.Modal(document.getElementById('modalDelete'), { backdrop: 'static' });
+    loadRooms();
+  });
+
+  async function loadRooms() {
+    try {
+      const res  = await fetch('/api/rooms', { headers });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      allRooms = data.data;
+      renderTable(allRooms);
+      document.getElementById('room-count').textContent = allRooms.length + ' ruangan';
+    } catch (err) {
+      showAlert('alert-top', 'Gagal memuat data: ' + err.message, 'danger');
+    }
+  }
+
+  function renderTable(rooms) {
+    const tbody = document.getElementById('room-table-body');
+    if (!rooms.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Belum ada data ruangan</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rooms.map((r, i) => `
+      <tr>
+        <td class="ps-3 text-muted small">${i + 1}</td>
+        <td class="fw-medium">${r.room_name}</td>
+        <td class="text-muted small">${r.location || '<span class="text-muted fst-italic">-</span>'}</td>
+        <td class="text-muted small">${new Date(r.created_at).toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' })}</td>
+        <td>
+          <button class="btn btn-sm btn-light me-1" onclick="openEdit('${r._id}')">
+            <i class="bi bi-pencil text-primary"></i>
+          </button>
+          <button class="btn btn-sm btn-light" onclick="openDelete('${r._id}', '${r.room_name}')">
+            <i class="bi bi-trash text-danger"></i>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function filterTable() {
+    const q = document.getElementById('search-input').value.toLowerCase();
+    renderTable(allRooms.filter(r =>
+      r.room_name.toLowerCase().includes(q) ||
+      (r.location && r.location.toLowerCase().includes(q))
+    ));
+  }
+
+  function openModal() {
+    editId = null;
+    document.getElementById('modal-title-text').textContent = 'Tambah Ruangan';
+    document.getElementById('f-name').value = '';
+    document.getElementById('f-location').value = '';
+    hideAlert('modal-alert');
+    bsModal.show();
+  }
+
+  function openEdit(id) {
+    const r = allRooms.find(r => r._id === id);
+    if (!r) return;
+    editId = id;
+    document.getElementById('modal-title-text').textContent = 'Edit Ruangan';
+    document.getElementById('f-name').value     = r.room_name;
+    document.getElementById('f-location').value = r.location || '';
+    hideAlert('modal-alert');
+    bsModal.show();
+  }
+
+  function closeModal()       { bsModal.hide(); }
+  function closeDeleteModal() { bsDeleteModal.hide(); }
+
+  async function saveRoom() {
+    const room_name = document.getElementById('f-name').value.trim();
+    const location  = document.getElementById('f-location').value.trim();
+
+    if (!room_name) return showAlert('modal-alert', 'Nama ruangan wajib diisi', 'danger');
+
+    const body   = { room_name, location: location || null };
+    const url    = editId ? `/api/rooms/${editId}` : '/api/rooms';
+    const method = editId ? 'PUT' : 'POST';
+
+    try {
+      const res  = await fetch(url, { method, headers, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      closeModal();
+      showAlert('alert-top', data.message, 'success');
+      loadRooms();
+    } catch (err) {
+      showAlert('modal-alert', err.message, 'danger');
+    }
+  }
+
+  function openDelete(id, name) {
+    deleteId = id;
+    document.getElementById('delete-name').textContent = name;
+    bsDeleteModal.show();
+  }
+
+  async function confirmDelete() {
+    try {
+      const res  = await fetch(`/api/rooms/${deleteId}`, { method: 'DELETE', headers });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      closeDeleteModal();
+      showAlert('alert-top', data.message, 'success');
+      loadRooms();
+    } catch (err) {
+      showAlert('alert-top', err.message, 'danger');
+    }
+  }
+
+  function showAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.className = `alert alert-${type}`;
+    if (type === 'success') setTimeout(() => el.className = 'alert d-none', 3000);
+  }
+  function hideAlert(id) {
+    document.getElementById(id).className = 'alert d-none';
+  }
+</script>

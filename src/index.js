@@ -27,6 +27,10 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use(expressLayouts);
+app.set('layout', 'layouts/main');
+app.set('layout extractScripts', true);
+app.set('layout extractStyles', true);
 
 // Web Routes
 app.get('/', (req, res) => {
@@ -40,6 +44,12 @@ app.get('/dashboard', (req, res) => {
 });
 app.get('/users', (req, res) => {
   res.render('pages/users', { title: 'Manajemen Pengguna', page: 'users' });
+});
+const roomRoutes = require("./routes/roomRoutes");
+app.use("/api/rooms", roomRoutes);
+
+app.get('/rooms', (req, res) => {
+  res.render('pages/rooms', { title: 'Manajemen Ruangan', page: 'rooms' });
 });
 
 const PORT = process.env.PORT || 3000;
