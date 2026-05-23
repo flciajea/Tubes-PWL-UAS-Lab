@@ -137,31 +137,59 @@
     <i class="bi bi-grid-1x2"></i> Dashboard
   </a>
 
-  <div class="menu-label mt-2">Master Data</div>
-  <a href="/users" class="menu-item <%= (locals.page === 'users') ? 'active' : '' %>">
-    <i class="bi bi-people"></i> Pengguna
-  </a>
-  <a href="/rooms" class="menu-item <%= (locals.page === 'rooms') ? 'active' : '' %>">
-    <i class="bi bi-door-open"></i> Ruangan
-  </a>
+  <!-- Admin only -->
+  <div id="menu-admin" style="display:none">
+    <div class="menu-label mt-2">Master Data</div>
+    <a href="/users" class="menu-item <%= (locals.page === 'users') ? 'active' : '' %>">
+      <i class="bi bi-people"></i> Pengguna
+    </a>
+    <a href="/rooms" class="menu-item <%= (locals.page === 'rooms') ? 'active' : '' %>">
+      <i class="bi bi-door-open"></i> Ruangan
+    </a>
+  </div>
 
-  <div class="menu-label mt-2">Pengadaan</div>
-  <a href="/procurement" class="menu-item <%= (locals.page === 'procurement') ? 'active' : '' %>">
-    <i class="bi bi-cart-plus"></i> Draf Pengadaan
-  </a>
+  <!-- Kepala Lab only -->
+  <div id="menu-kepala_lab" style="display:none">
+    <div class="menu-label mt-2">Pengadaan</div>
+    <a href="/procurement" class="menu-item <%= (locals.page === 'procurement') ? 'active' : '' %>">
+      <i class="bi bi-cart-plus"></i> Draf Pengadaan
+    </a>
+  </div>
 
-  <div class="menu-label mt-2">Aset & BHP</div>
-  <a href="/inventories" class="menu-item <%= (locals.page === 'inventories') ? 'active' : '' %>">
-    <i class="bi bi-box-seam"></i> Inventaris
-  </a>
-  <a href="/bhp" class="menu-item <%= (locals.page === 'bhp') ? 'active' : '' %>">
-    <i class="bi bi-archive"></i> Stok BHP
-  </a>
+  <!-- Kaprodi only -->
+  <div id="menu-kaprodi" style="display:none">
+    <div class="menu-label mt-2">Pengadaan</div>
+    <a href="/procurement" class="menu-item <%= (locals.page === 'procurement') ? 'active' : '' %>">
+      <i class="bi bi-clipboard-check"></i> Review Pengadaan
+    </a>
+  </div>
 
-  <div class="menu-label mt-2">Maintenance</div>
-  <a href="/maintenance" class="menu-item <%= (locals.page === 'maintenance') ? 'active' : '' %>">
-    <i class="bi bi-tools"></i> Log Maintenance
-  </a>
+  <!-- Staf Admin only -->
+  <div id="menu-staf_admin" style="display:none">
+    <div class="menu-label mt-2">Pengadaan</div>
+    <a href="/procurement" class="menu-item <%= (locals.page === 'procurement') ? 'active' : '' %>">
+      <i class="bi bi-cart-check"></i> Penerimaan Barang
+    </a>
+    <div class="menu-label mt-2">Aset</div>
+    <a href="/inventories" class="menu-item <%= (locals.page === 'inventories') ? 'active' : '' %>">
+      <i class="bi bi-box-seam"></i> Inventaris
+    </a>
+  </div>
+
+  <!-- Staf Lab only -->
+  <div id="menu-staf_lab" style="display:none">
+    <div class="menu-label mt-2">Aset & BHP</div>
+    <a href="/inventories" class="menu-item <%= (locals.page === 'inventories') ? 'active' : '' %>">
+      <i class="bi bi-box-seam"></i> Inventaris
+    </a>
+    <a href="/bhp" class="menu-item <%= (locals.page === 'bhp') ? 'active' : '' %>">
+      <i class="bi bi-archive"></i> Stok BHP
+    </a>
+    <div class="menu-label mt-2">Maintenance</div>
+    <a href="/maintenance" class="menu-item <%= (locals.page === 'maintenance') ? 'active' : '' %>">
+      <i class="bi bi-tools"></i> Log Maintenance
+    </a>
+  </div>
 </nav>
 
   <div class="sidebar-footer">
@@ -211,6 +239,9 @@
     document.getElementById('sidebar-role').textContent = roleLabel[user.role] || user.role;
     document.getElementById('sidebar-avatar').textContent = user.name.charAt(0).toUpperCase();
     document.getElementById('topbar-name').textContent = user.name;
+    // Tampilkan menu sesuai role
+    const menuEl = document.getElementById('menu-' + user.role);
+    if (menuEl) menuEl.style.display = 'block';
   }
 
   function logout() {

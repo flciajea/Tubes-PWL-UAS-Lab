@@ -63,19 +63,27 @@
 </div>
 
 <script>
-  const user = JSON.parse(localStorage.getItem('user'));
   if (!user) {
     window.location.href = '/login';
   } else {
     document.getElementById('welcome-name').textContent = user.name;
   }
 
-  // Fetch stats
-  const token = localStorage.getItem('token');
-  const headers = { 'Authorization': 'Bearer ' + token };
+// Fetch stats sesuai role
+    const token = localStorage.getItem('token');
+    const headers = { 'Authorization': 'Bearer ' + token };
 
-  fetch('/api/users', { headers })
-    .then(r => r.json())
-    .then(d => document.getElementById('stat-users').textContent = d.data?.length ?? '-')
-    .catch(() => {});
+    if (user.role === 'admin') {
+      fetch('/api/users', { headers })
+        .then(r => r.json())
+        .then(d => document.getElementById('stat-users').textContent = d.data?.length ?? '-')
+        .catch(() => {});
+    }
+
+    if (['admin', 'kepala_lab', 'kaprodi', 'staf_admin'].includes(user.role)) {
+      fetch('/api/procurement', { headers })
+        .then(r => r.json())
+        .then(d => document.getElementById('stat-proc').textContent = d.data?.length ?? '-')
+        .catch(() => {});
+  }
 </script>

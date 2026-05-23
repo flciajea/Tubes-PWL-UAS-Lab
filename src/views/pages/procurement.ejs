@@ -1,0 +1,576 @@
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h5 class="fw-bold mb-0"><i class="bi bi-cart-plus me-2"></i>Draf Pengadaan</h5>
+  <button class="btn btn-primary btn-sm px-3" id="btn-tambah-draf" onclick="openModalDraf()">
+    <i class="bi bi-plus-lg me-1"></i> Buat Draf Baru
+  </button>
+</div>
+
+<div id="alert-top" class="alert d-none"></div>
+
+<!-- Tabel Draf -->
+<div class="card border-0 shadow-sm mb-4" id="card-draf">
+  <div class="card-header bg-white d-flex align-items-center justify-content-between py-3">
+    <span class="fw-semibold small">Daftar Draf Pengadaan</span>
+    <span class="text-muted small" id="draf-count"></span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="text-muted small fw-semibold ps-3">#</th>
+            <th class="text-muted small fw-semibold">Judul</th>
+            <th class="text-muted small fw-semibold">Tahun</th>
+            <th class="text-muted small fw-semibold">Status</th>
+            <th class="text-muted small fw-semibold">Jml Item</th>
+            <th class="text-muted small fw-semibold">Dibuat</th>
+            <th class="text-muted small fw-semibold">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="draf-table-body">
+          <tr><td colspan="7" class="text-center text-muted py-4">Memuat data...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Draf & Items -->
+<div id="card-detail" class="d-none">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-sm btn-light" onclick="backToList()">
+        <i class="bi bi-arrow-left"></i> Kembali
+      </button>
+      <span class="fw-bold" id="detail-title"></span>
+      <span id="detail-status-badge"></span>
+    </div>
+    <div id="detail-actions"></div>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white d-flex align-items-center justify-content-between py-3">
+      <span class="fw-semibold small">Daftar Item Barang</span>
+      <button class="btn btn-success btn-sm px-3" id="btn-add-item" onclick="openModalItem()">
+        <i class="bi bi-plus-lg me-1"></i> Tambah Item
+      </button>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="text-muted small fw-semibold ps-3">#</th>
+              <th class="text-muted small fw-semibold">Nama Barang</th>
+              <th class="text-muted small fw-semibold">Tipe</th>
+              <th class="text-muted small fw-semibold">Harga</th>
+              <th class="text-muted small fw-semibold">Qty</th>
+              <th class="text-muted small fw-semibold">Total</th>
+              <th class="text-muted small fw-semibold">Link</th>
+              <th class="text-muted small fw-semibold">Status</th>
+              <th class="text-muted small fw-semibold">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="item-table-body">
+            <tr><td colspan="9" class="text-center text-muted py-4">Belum ada item</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card-footer bg-white text-end">
+      <span class="text-muted small me-2">Total Anggaran:</span>
+      <span class="fw-bold text-primary" id="total-anggaran">Rp 0</span>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Buat/Edit Draf -->
+<div class="modal fade" id="modalDraf" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-bottom">
+        <h6 class="modal-title fw-bold" id="draf-modal-title">Buat Draf Baru</h6>
+        <button type="button" class="btn-close" onclick="closeModalDraf()"></button>
+      </div>
+      <div class="modal-body">
+        <div id="draf-modal-alert" class="alert d-none"></div>
+        <div class="mb-3">
+          <label class="form-label small fw-medium">Judul Draf</label>
+          <input type="text" class="form-control" id="f-draf-title"
+                 placeholder="Contoh: Pengadaan Tahunan TA 2025/2026"/>
+        </div>
+        <div class="mb-1">
+          <label class="form-label small fw-medium">Tahun</label>
+          <input type="number" class="form-control" id="f-draf-year"
+                 placeholder="Contoh: 2025" min="2020" max="2099"/>
+        </div>
+      </div>
+      <div class="modal-footer border-top">
+        <button class="btn btn-light btn-sm" onclick="closeModalDraf()">Batal</button>
+        <button class="btn btn-primary btn-sm px-4" onclick="saveDraf()">Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tambah/Edit Item -->
+<div class="modal fade" id="modalItem" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-bottom">
+        <h6 class="modal-title fw-bold" id="item-modal-title">Tambah Item</h6>
+        <button type="button" class="btn-close" onclick="closeModalItem()"></button>
+      </div>
+      <div class="modal-body">
+        <div id="item-modal-alert" class="alert d-none"></div>
+        <div class="row g-3">
+          <div class="col-md-8">
+            <label class="form-label small fw-medium">Nama Barang</label>
+            <input type="text" class="form-control" id="f-item-name" placeholder="Nama barang"/>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small fw-medium">Tipe</label>
+            <select class="form-select" id="f-item-type">
+              <option value="">-- Pilih --</option>
+              <option value="inventaris">Inventaris</option>
+              <option value="bhp">BHP</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small fw-medium">Harga Satuan (Rp)</label>
+            <input type="number" class="form-control" id="f-item-price" placeholder="0" min="0"/>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small fw-medium">Jumlah</label>
+            <input type="number" class="form-control" id="f-item-qty" placeholder="0" min="1"/>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small fw-medium">Total</label>
+            <input type="text" class="form-control bg-light" id="f-item-total" readonly placeholder="Rp 0"/>
+          </div>
+          <div class="col-12">
+            <label class="form-label small fw-medium">Link Pembelian <span class="text-muted">(opsional)</span></label>
+            <input type="url" class="form-control" id="f-item-link" placeholder="https://tokopedia.com/..."/>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-top">
+        <button class="btn btn-light btn-sm" onclick="closeModalItem()">Batal</button>
+        <button class="btn btn-success btn-sm px-4" onclick="saveItem()">Simpan Item</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Konfirmasi Hapus -->
+<div class="modal fade" id="modalDelete" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-bottom">
+        <h6 class="modal-title fw-bold" id="delete-modal-title">Konfirmasi Hapus</h6>
+        <button type="button" class="btn-close" onclick="closeDeleteModal()"></button>
+      </div>
+      <div class="modal-body small text-muted" id="delete-modal-body">
+        Yakin ingin menghapus ini?
+      </div>
+      <div class="modal-footer border-top">
+        <button class="btn btn-light btn-sm" onclick="closeDeleteModal()">Batal</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDelete()">Hapus</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const token   = localStorage.getItem('token');
+  const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+
+  const statusBadge = {
+    draft:     '<span class="badge bg-secondary">Draft</span>',
+    locked:    '<span class="badge bg-warning text-dark">Menunggu Review</span>',
+    finalized: '<span class="badge bg-success">Finalisasi</span>',
+  };
+
+  let allDrafts = [], currentDraft = null;
+  let editDrafId = null, editItemId = null;
+  let deleteType = null, deleteTargetId = null;
+  let bsModalDraf, bsModalItem, bsModalDelete;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    bsModalDraf   = new bootstrap.Modal(document.getElementById('modalDraf'),   { backdrop: 'static' });
+    bsModalItem   = new bootstrap.Modal(document.getElementById('modalItem'),   { backdrop: 'static' });
+    bsModalDelete = new bootstrap.Modal(document.getElementById('modalDelete'), { backdrop: 'static' });
+
+    // Sembunyikan tombol buat draf jika bukan kepala_lab
+    if (user.role !== 'kepala_lab') {
+      document.getElementById('btn-tambah-draf').style.display = 'none';
+    }
+
+    // Hitung total otomatis
+    document.getElementById('f-item-price').addEventListener('input', hitungTotal);
+    document.getElementById('f-item-qty').addEventListener('input', hitungTotal);
+
+    loadDrafts();
+  });
+
+  function hitungTotal() {
+    const price = parseFloat(document.getElementById('f-item-price').value) || 0;
+    const qty   = parseFloat(document.getElementById('f-item-qty').value)   || 0;
+    document.getElementById('f-item-total').value = formatRupiah(price * qty);
+  }
+
+  // ── Load daftar draf ─────────────────────────────────────────
+  async function loadDrafts() {
+    try {
+      const res  = await fetch('/api/procurement', { headers });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      allDrafts = data.data;
+      renderDrafTable(allDrafts);
+      document.getElementById('draf-count').textContent = allDrafts.length + ' draf';
+    } catch (err) {
+      showAlert('alert-top', 'Gagal memuat data: ' + err.message, 'danger');
+    }
+  }
+
+  function renderDrafTable(drafts) {
+    const tbody = document.getElementById('draf-table-body');
+    if (!drafts.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Belum ada draf pengadaan</td></tr>';
+      return;
+    }
+    tbody.innerHTML = drafts.map((d, i) => `
+      <tr style="cursor:pointer" onclick="openDetail('${d._id}')">
+        <td class="ps-3 text-muted small">${i + 1}</td>
+        <td class="fw-medium">${d.title}</td>
+        <td>${d.year}</td>
+        <td>${statusBadge[d.status]}</td>
+        <td><span class="badge bg-light text-dark border">${d.items.length} item</span></td>
+        <td class="text-muted small">${new Date(d.created_at).toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' })}</td>
+        <td onclick="event.stopPropagation()">
+          ${d.status === 'draft' && user.role === 'kepala_lab' ? `
+            <button class="btn btn-sm btn-light me-1" onclick="openEditDraf('${d._id}')">
+              <i class="bi bi-pencil text-primary"></i>
+            </button>
+            <button class="btn btn-sm btn-light" onclick="openDeleteDraf('${d._id}', '${d.title}')">
+              <i class="bi bi-trash text-danger"></i>
+            </button>
+          ` : ''}
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // ── Buka detail draf ─────────────────────────────────────────
+  async function openDetail(id) {
+    try {
+      const res  = await fetch(`/api/procurement/${id}`, { headers });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      currentDraft = data.data;
+
+      document.getElementById('card-draf').classList.add('d-none');
+      document.getElementById('card-detail').classList.remove('d-none');
+      document.getElementById('detail-title').textContent = currentDraft.title + ' (' + currentDraft.year + ')';
+      document.getElementById('detail-status-badge').innerHTML = statusBadge[currentDraft.status];
+
+      const actions = document.getElementById('detail-actions');
+      const btnAdd  = document.getElementById('btn-add-item');
+
+      if (currentDraft.status === 'draft' && user.role === 'kepala_lab') {
+        btnAdd.style.display = 'inline-block';
+        actions.innerHTML = `
+          <button class="btn btn-warning btn-sm px-3" onclick="lockDraft('${currentDraft._id}')">
+            <i class="bi bi-lock me-1"></i> Kunci & Kirim ke Kaprodi
+          </button>`;
+      } else if (currentDraft.status === 'locked' && user.role === 'kaprodi') {
+        btnAdd.style.display = 'none';
+        actions.innerHTML = `
+          <button class="btn btn-success btn-sm px-3" onclick="doFinalizeDraft('${currentDraft._id}')">
+            <i class="bi bi-check-circle me-1"></i> Finalisasi Draf
+          </button>`;
+      } else {
+        btnAdd.style.display = 'none';
+        actions.innerHTML = '';
+      }
+
+      renderItemTable(currentDraft.items, currentDraft.status);
+    } catch (err) {
+      showAlert('alert-top', 'Gagal memuat detail: ' + err.message, 'danger');
+    }
+  }
+
+  function renderItemTable(items, status) {
+    const tbody = document.getElementById('item-table-body');
+    if (!items.length) {
+      tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">Belum ada item</td></tr>';
+      document.getElementById('total-anggaran').textContent = 'Rp 0';
+      return;
+    }
+
+    const approvalBadge = {
+      pending:  '<span class="badge bg-secondary">Pending</span>',
+      approved: '<span class="badge bg-success">Disetujui</span>',
+      rejected: '<span class="badge bg-danger">Ditolak</span>',
+    };
+
+    let total = 0;
+    tbody.innerHTML = items.map((item, i) => {
+      const subtotal = item.price * item.quantity;
+      total += subtotal;
+      return `
+        <tr>
+          <td class="ps-3 text-muted small">${i + 1}</td>
+          <td class="fw-medium">${item.item_name}</td>
+          <td><span class="badge ${item.item_type === 'inventaris' ? 'bg-info-subtle text-info' : 'bg-warning-subtle text-warning'}">
+            ${item.item_type}
+          </span></td>
+          <td class="small">${formatRupiah(item.price)}</td>
+          <td>${item.quantity}</td>
+          <td class="small fw-medium">${formatRupiah(subtotal)}</td>
+          <td>${item.purchase_link
+            ? `<a href="${item.purchase_link}" target="_blank" class="btn btn-sm btn-light"><i class="bi bi-link-45deg"></i></a>`
+            : '<span class="text-muted">-</span>'}</td>
+          <td>${approvalBadge[item.approval_status]}</td>
+          <td>
+            ${status === 'draft' && user.role === 'kepala_lab' ? `
+              <button class="btn btn-sm btn-light me-1" onclick="openEditItem('${item._id}')">
+                <i class="bi bi-pencil text-primary"></i>
+              </button>
+              <button class="btn btn-sm btn-light" onclick="openDeleteItem('${item._id}', '${item.item_name}')">
+                <i class="bi bi-trash text-danger"></i>
+              </button>
+            ` : status === 'locked' && user.role === 'kaprodi' ? `
+              <button class="btn btn-sm btn-success me-1" onclick="approveItem('${item._id}')">
+                <i class="bi bi-check-lg"></i> Setuju
+              </button>
+              <button class="btn btn-sm btn-danger" onclick="rejectItem('${item._id}')">
+                <i class="bi bi-x-lg"></i> Tolak
+              </button>
+            ` : ''}
+          </td>
+        </tr>`;
+    }).join('');
+
+    document.getElementById('total-anggaran').textContent = formatRupiah(total);
+  }
+
+  function backToList() {
+    currentDraft = null;
+    document.getElementById('card-detail').classList.add('d-none');
+    document.getElementById('card-draf').classList.remove('d-none');
+    loadDrafts();
+  }
+
+  // ── Modal Draf ───────────────────────────────────────────────
+  function openModalDraf() {
+    editDrafId = null;
+    document.getElementById('draf-modal-title').textContent = 'Buat Draf Baru';
+    document.getElementById('f-draf-title').value = '';
+    document.getElementById('f-draf-year').value  = new Date().getFullYear();
+    hideAlert('draf-modal-alert');
+    bsModalDraf.show();
+  }
+
+  function openEditDraf(id) {
+    const d = allDrafts.find(d => d._id === id);
+    if (!d) return;
+    editDrafId = id;
+    document.getElementById('draf-modal-title').textContent = 'Edit Draf';
+    document.getElementById('f-draf-title').value = d.title;
+    document.getElementById('f-draf-year').value  = d.year;
+    hideAlert('draf-modal-alert');
+    bsModalDraf.show();
+  }
+
+  function closeModalDraf() { bsModalDraf.hide(); }
+
+  async function saveDraf() {
+    const title = document.getElementById('f-draf-title').value.trim();
+    const year  = document.getElementById('f-draf-year').value;
+    if (!title || !year) return showAlert('draf-modal-alert', 'Title dan tahun wajib diisi', 'danger');
+
+    const url    = editDrafId ? `/api/procurement/${editDrafId}` : '/api/procurement';
+    const method = editDrafId ? 'PUT' : 'POST';
+
+    try {
+      const res  = await fetch(url, { method, headers, body: JSON.stringify({ title, year: parseInt(year) }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      closeModalDraf();
+      showAlert('alert-top', data.message, 'success');
+      loadDrafts();
+    } catch (err) {
+      showAlert('draf-modal-alert', err.message, 'danger');
+    }
+  }
+
+  // ── Modal Item ───────────────────────────────────────────────
+  function openModalItem() {
+    editItemId = null;
+    document.getElementById('item-modal-title').textContent = 'Tambah Item';
+    ['f-item-name','f-item-price','f-item-qty','f-item-link','f-item-total'].forEach(id =>
+      document.getElementById(id).value = '');
+    document.getElementById('f-item-type').value = '';
+    hideAlert('item-modal-alert');
+    bsModalItem.show();
+  }
+
+  function openEditItem(itemId) {
+    const item = currentDraft.items.find(i => i._id === itemId);
+    if (!item) return;
+    editItemId = itemId;
+    document.getElementById('item-modal-title').textContent = 'Edit Item';
+    document.getElementById('f-item-name').value  = item.item_name;
+    document.getElementById('f-item-type').value  = item.item_type;
+    document.getElementById('f-item-price').value = item.price;
+    document.getElementById('f-item-qty').value   = item.quantity;
+    document.getElementById('f-item-link').value  = item.purchase_link || '';
+    document.getElementById('f-item-total').value = formatRupiah(item.price * item.quantity);
+    hideAlert('item-modal-alert');
+    bsModalItem.show();
+  }
+
+  function closeModalItem() { bsModalItem.hide(); }
+
+  async function saveItem() {
+    const item_name     = document.getElementById('f-item-name').value.trim();
+    const item_type     = document.getElementById('f-item-type').value;
+    const price         = parseFloat(document.getElementById('f-item-price').value);
+    const quantity      = parseInt(document.getElementById('f-item-qty').value);
+    const purchase_link = document.getElementById('f-item-link').value.trim();
+
+    if (!item_name || !item_type || !price || !quantity)
+      return showAlert('item-modal-alert', 'Nama, tipe, harga, dan jumlah wajib diisi', 'danger');
+
+    const body   = { item_name, item_type, price, quantity, purchase_link: purchase_link || null };
+    const url    = editItemId
+      ? `/api/procurement/${currentDraft._id}/items/${editItemId}`
+      : `/api/procurement/${currentDraft._id}/items`;
+    const method = editItemId ? 'PUT' : 'POST';
+
+    try {
+      const res  = await fetch(url, { method, headers, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      closeModalItem();
+      currentDraft = data.data;
+      renderItemTable(currentDraft.items, currentDraft.status);
+      showAlert('alert-top', data.message, 'success');
+    } catch (err) {
+      showAlert('item-modal-alert', err.message, 'danger');
+    }
+  }
+
+  // ── Lock Draf ────────────────────────────────────────────────
+  async function lockDraft(id) {
+    if (!confirm('Kunci draf dan kirim ke Kaprodi untuk review? Draf tidak bisa diubah setelah dikunci.')) return;
+    try {
+      const res  = await fetch(`/api/procurement/${id}/lock`, { method: 'PATCH', headers });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      showAlert('alert-top', data.message, 'success');
+      openDetail(id);
+    } catch (err) {
+      showAlert('alert-top', err.message, 'danger');
+    }
+  }
+
+  // ── Review item (Kaprodi) ────────────────────────────────────
+  async function approveItem(itemId) {
+    await reviewItemAPI(itemId, 'approved');
+  }
+
+  async function rejectItem(itemId) {
+    await reviewItemAPI(itemId, 'rejected');
+  }
+
+  async function reviewItemAPI(itemId, approval_status) {
+    try {
+      const res  = await fetch(`/api/procurement/${currentDraft._id}/items/${itemId}/review`, {
+        method: 'PATCH', headers,
+        body: JSON.stringify({ approval_status })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      currentDraft = data.data;
+      renderItemTable(currentDraft.items, currentDraft.status);
+      showAlert('alert-top', data.message, 'success');
+    } catch (err) {
+      showAlert('alert-top', err.message, 'danger');
+    }
+  }
+
+  // ── Finalisasi (Kaprodi) ─────────────────────────────────────
+  async function doFinalizeDraft(id) {
+    if (!confirm('Finalisasi draf ini? Setelah difinalisasi draf tidak bisa diubah lagi.')) return;
+    try {
+      const res  = await fetch(`/api/procurement/${id}/finalize`, { method: 'PATCH', headers });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      showAlert('alert-top', data.message, 'success');
+      openDetail(id);
+    } catch (err) {
+      showAlert('alert-top', err.message, 'danger');
+    }
+  }
+
+  // ── Delete ───────────────────────────────────────────────────
+  function openDeleteDraf(id, title) {
+    deleteType     = 'draf';
+    deleteTargetId = id;
+    document.getElementById('delete-modal-title').textContent = 'Hapus Draf';
+    document.getElementById('delete-modal-body').innerHTML =
+      `Yakin ingin menghapus draf <strong>${title}</strong>? Semua item di dalamnya akan ikut terhapus.`;
+    bsModalDelete.show();
+  }
+
+  function openDeleteItem(itemId, name) {
+    deleteType     = 'item';
+    deleteTargetId = itemId;
+    document.getElementById('delete-modal-title').textContent = 'Hapus Item';
+    document.getElementById('delete-modal-body').innerHTML =
+      `Yakin ingin menghapus item <strong>${name}</strong>?`;
+    bsModalDelete.show();
+  }
+
+  function closeDeleteModal() { bsModalDelete.hide(); }
+
+  async function confirmDelete() {
+    try {
+      const url = deleteType === 'draf'
+        ? `/api/procurement/${deleteTargetId}`
+        : `/api/procurement/${currentDraft._id}/items/${deleteTargetId}`;
+
+      const res  = await fetch(url, { method: 'DELETE', headers });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      closeDeleteModal();
+      showAlert('alert-top', data.message, 'success');
+
+      if (deleteType === 'draf') {
+        loadDrafts();
+      } else {
+        currentDraft = data.data;
+        renderItemTable(currentDraft.items, currentDraft.status);
+      }
+    } catch (err) {
+      showAlert('alert-top', err.message, 'danger');
+    }
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────
+  function formatRupiah(num) {
+    return 'Rp ' + Number(num).toLocaleString('id-ID');
+  }
+  function showAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.className = `alert alert-${type}`;
+    if (type === 'success') setTimeout(() => el.className = 'alert d-none', 3000);
+  }
+  function hideAlert(id) {
+    document.getElementById(id).className = 'alert d-none';
+  }
+</script>

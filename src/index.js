@@ -52,6 +52,13 @@ app.get('/rooms', (req, res) => {
   res.render('pages/rooms', { title: 'Manajemen Ruangan', page: 'rooms' });
 });
 
+const procurementRoutes = require("./routes/procurementRoutes");
+app.use("/api/procurement", procurementRoutes);
+
+app.get('/procurement', (req, res) => {
+  res.render('pages/procurement', { title: 'Draf Pengadaan', page: 'procurement' });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server berjalan di port ${PORT}`);
