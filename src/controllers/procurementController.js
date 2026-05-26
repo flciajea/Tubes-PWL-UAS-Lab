@@ -196,8 +196,27 @@ const finalizeDraft = async (req, res) => {
   }
 };
 
+// ── Kembalikan ke draft (Kaprodi) ────────────────────────────
+const revertToDraft = async (req, res) => {
+  try {
+    const draft = await ProcurementDraft.findById(req.params.id);
+    if (!draft) return res.status(404).json({ message: "Draf tidak ditemukan" });
+    if (draft.status !== "locked")
+      return res.status(400).json({ message: "Hanya draf berstatus locked yang bisa dikembalikan" });
+
+    // Reset semua item ke pending
+    draft.items.forEach(item => item.approval_status = 'pending');
+    draft.status = "draft";
+    await draft.save();
+
+    res.json({ message: "Draf dikembalikan ke Kepala Lab untuk direvisi", data: draft });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 module.exports = {
   getAllDrafts, getDraftById, createDraft, updateDraft,
   deleteDraft, addItem, updateItem, deleteItem, lockDraft,
-  reviewItem, finalizeDraft
+  reviewItem, finalizeDraft, revertToDraft
 };

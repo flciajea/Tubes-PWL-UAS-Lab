@@ -286,6 +286,9 @@
       } else if (currentDraft.status === 'locked' && user.role === 'kaprodi') {
         btnAdd.style.display = 'none';
         actions.innerHTML = `
+          <button class="btn btn-outline-secondary btn-sm me-2" onclick="revertDraft('${currentDraft._id}')">
+            <i class="bi bi-arrow-counterclockwise me-1"></i> Kembalikan ke Kepala Lab
+          </button>
           <button class="btn btn-success btn-sm px-3" onclick="doFinalizeDraft('${currentDraft._id}')">
             <i class="bi bi-check-circle me-1"></i> Finalisasi Draf
           </button>`;
@@ -573,4 +576,17 @@
   function hideAlert(id) {
     document.getElementById(id).className = 'alert d-none';
   }
+
+  async function revertDraft(id) {
+  if (!confirm('Kembalikan draf ke Kepala Lab untuk direvisi? Semua status item akan direset ke pending.')) return;
+  try {
+    const res  = await fetch(`/api/procurement/${id}/revert`, { method: 'PATCH', headers });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    showAlert('alert-top', data.message, 'success');
+    backToList();
+  } catch (err) {
+    showAlert('alert-top', err.message, 'danger');
+  }
+}
 </script>

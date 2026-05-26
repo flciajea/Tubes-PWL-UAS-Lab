@@ -1,89 +1,237 @@
-<% locals.page = 'dashboard' %>
+<link rel="stylesheet" href="/css/dashboard.css">
 
-<style>
-  .stat-card {
-    background: white; border-radius: 12px;
-    padding: 1.25rem; border: 1px solid #e2e8f0;
-    display: flex; flex-direction: column; gap: 6px;
-  }
-  .stat-icon {
-    width: 40px; height: 40px; border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; margin-bottom: 4px;
-  }
-  .bg-primary-soft { background: #ebf4ff; }
-  .bg-success-soft { background: #f0fff4; }
-  .bg-warning-soft { background: #fffbeb; }
-  .bg-info-soft    { background: #e0f2fe; }
-  .stat-val  { font-size: 1.75rem; font-weight: 700; color: #1a202c; }
-  .stat-label { font-size: 0.8rem; color: #718096; }
-  .welcome-card {
-    background: linear-gradient(135deg, #1a56db, #1e40af);
-    border-radius: 12px; padding: 1.5rem;
-    color: white; margin-bottom: 1.5rem;
-  }
-</style>
-
+<!-- Welcome card -->
 <div class="welcome-card">
-  <h5 class="mb-1">Selamat datang, <span id="welcome-name">-</span> 👋</h5>
-  <p class="mb-0" style="opacity:0.8; font-size:0.875rem;">
-    Sistem Manajemen Aset Laboratorium — Capstone PWL
-  </p>
+  <div class="welcome-text">
+    <h5>Selamat datang, <span id="welcome-name">-</span> </h5>
+    <p>Sistem Manajemen Aset Laboratorium</p>
+  </div>
+  <span class="welcome-role" id="welcome-role">-</span>
 </div>
 
-<div class="row g-3">
-  <div class="col-6 col-md-3">
-    <div class="stat-card">
-      <div class="stat-icon bg-primary-soft"><i class="bi bi-people text-primary"></i></div>
-      <div class="stat-val" id="stat-users">-</div>
-      <div class="stat-label">Total Pengguna</div>
-    </div>
-  </div>
-  <div class="col-6 col-md-3">
-    <div class="stat-card">
-      <div class="stat-icon bg-success-soft"><i class="bi bi-box-seam text-success"></i></div>
-      <div class="stat-val" id="stat-inv">-</div>
-      <div class="stat-label">Total Inventaris</div>
-    </div>
-  </div>
-  <div class="col-6 col-md-3">
-    <div class="stat-card">
-      <div class="stat-icon bg-warning-soft"><i class="bi bi-archive text-warning"></i></div>
-      <div class="stat-val" id="stat-bhp">-</div>
-      <div class="stat-label">Item BHP</div>
-    </div>
-  </div>
-  <div class="col-6 col-md-3">
-    <div class="stat-card">
-      <div class="stat-icon bg-info-soft"><i class="bi bi-cart-plus text-info"></i></div>
-      <div class="stat-val" id="stat-proc">-</div>
-      <div class="stat-label">Draf Pengadaan</div>
-    </div>
-  </div>
-</div>
+<!-- Stats row -->
+<div class="row g-3 mb-4" id="stats-row"></div>
+
+<!-- Info panels -->
+<div class="row g-3" id="info-row"></div>
 
 <script>
-  if (!user) {
-    window.location.href = '/login';
-  } else {
+  const token   = localStorage.getItem('token');
+  const headers = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+
+  const roleLabel = {
+    admin: 'Administrator', kepala_lab: 'Kepala Laboratorium',
+    kaprodi: 'Ketua Program Studi', staf_admin: 'Staf Administrasi',
+    staf_lab: 'Staf Laboratorium'
+  };
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (!user) { window.location.href = '/login'; return; }
+
     document.getElementById('welcome-name').textContent = user.name;
+    document.getElementById('welcome-role').textContent = roleLabel[user.role] || user.role;
+
+    switch (user.role) {
+      case 'admin':      await loadAdmin();      break;
+      case 'kepala_lab': await loadKepalaLab();  break;
+      case 'kaprodi':    await loadKaprodi();    break;
+      case 'staf_admin': await loadStafAdmin();  break;
+      case 'staf_lab':   await loadStafLab();    break;
+    }
+  });
+
+  // ── Helpers ──────────────────────────────────────────────────
+  function renderStats(stats) {
+    document.getElementById('stats-row').innerHTML = stats.map(s => `
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:${s.bg}">${s.icon}</div>
+          <div class="stat-val">${s.val}</div>
+          <div class="stat-label">${s.label}</div>
+          ${s.sub ? `<div class="stat-sub">${s.sub}</div>` : ''}
+        </div>
+      </div>`).join('');
   }
 
-// Fetch stats sesuai role
-    const token = localStorage.getItem('token');
-    const headers = { 'Authorization': 'Bearer ' + token };
+  function renderInfoPanel(cols) {
+    document.getElementById('info-row').innerHTML = cols.map(c => `
+      <div class="${c.col || 'col-md-6'}">
+        <div class="info-card">
+          <div class="info-card-header">
+            <span>${c.title}</span>
+            ${c.link ? `<a href="${c.link}" class="btn btn-sm btn-light" style="font-size:0.75rem">Lihat semua</a>` : ''}
+          </div>
+          ${c.items.length ? `
+            <ul class="info-list">
+              ${c.items.map(i => `
+                <li>
+                  <span>${i.left}</span>
+                  <span>${i.right}</span>
+                </li>`).join('')}
+            </ul>` : `<div class="empty-info">Tidak ada data</div>`}
+        </div>
+      </div>`).join('');
+  }
 
-    if (user.role === 'admin') {
-      fetch('/api/users', { headers })
-        .then(r => r.json())
-        .then(d => document.getElementById('stat-users').textContent = d.data?.length ?? '-')
-        .catch(() => {});
-    }
+  // ── ADMIN ────────────────────────────────────────────────────
+  async function loadAdmin() {
+    const [uRes, rRes] = await Promise.all([
+      fetch('/api/users',  { headers }),
+      fetch('/api/rooms',  { headers }),
+    ]);
+    const users = (await uRes.json()).data || [];
+    const rooms = (await rRes.json()).data || [];
 
-    if (['admin', 'kepala_lab', 'kaprodi', 'staf_admin'].includes(user.role)) {
-      fetch('/api/procurement', { headers })
-        .then(r => r.json())
-        .then(d => document.getElementById('stat-proc').textContent = d.data?.length ?? '-')
-        .catch(() => {});
+    const roleCount = users.reduce((acc, u) => { acc[u.role] = (acc[u.role]||0)+1; return acc; }, {});
+
+    renderStats([
+      { icon:'👥', bg:'#ebf4ff', val: users.length, label:'Total Pengguna' },
+      { icon:'🚪', bg:'#f0fff4', val: rooms.length, label:'Total Ruangan' },
+      { icon:'🔬', bg:'#faf5ff', val: roleCount.staf_lab    || 0, label:'Staf Lab' },
+      { icon:'📋', bg:'#fffbeb', val: roleCount.kepala_lab  || 0, label:'Kepala Lab' },
+    ]);
+
+    renderInfoPanel([
+      {
+        title: 'Daftar Pengguna Terbaru', link: '/users', col: 'col-md-6',
+        items: users.slice(0,5).map(u => ({
+          left:  `<strong>${u.name}</strong>`,
+          right: `<span class="badge bg-light text-dark border" style="font-size:0.7rem">${roleLabel[u.role]||u.role}</span>`
+        }))
+      },
+      {
+        title: 'Daftar Ruangan', link: '/rooms', col: 'col-md-6',
+        items: rooms.slice(0,5).map(r => ({
+          left:  `<strong>${r.room_name}</strong>`,
+          right: `<span class="text-muted" style="font-size:0.75rem">${r.location||'-'}</span>`
+        }))
+      }
+    ]);
+  }
+
+  // ── KEPALA LAB ───────────────────────────────────────────────
+  async function loadKepalaLab() {
+    const res    = await fetch('/api/procurement', { headers });
+    const drafts = (await res.json()).data || [];
+
+    const byStatus = drafts.reduce((acc, d) => { acc[d.status] = (acc[d.status]||0)+1; return acc; }, {});
+    const totalItems = drafts.reduce((sum, d) => sum + d.items.length, 0);
+
+    renderStats([
+      { icon:'📄', bg:'#ebf4ff', val: drafts.length,          label:'Total Draf',         sub: 'semua tahun' },
+      { icon:'✏️',  bg:'#fffbeb', val: byStatus.draft    || 0, label:'Masih Draft',        sub: 'belum dikunci' },
+      { icon:'⏳', bg:'#faf5ff', val: byStatus.locked    || 0, label:'Menunggu Review',    sub: 'di Kaprodi' },
+      { icon:'✅', bg:'#f0fff4', val: byStatus.finalized || 0, label:'Sudah Difinalisasi', sub: 'disetujui Kaprodi' },
+    ]);
+
+    const statusBadge = {
+      draft:     '<span class="badge bg-secondary" style="font-size:0.7rem">Draft</span>',
+      locked:    '<span class="badge bg-warning text-dark" style="font-size:0.7rem">Review</span>',
+      finalized: '<span class="badge bg-success" style="font-size:0.7rem">Final</span>',
+    };
+
+    renderInfoPanel([
+      {
+        title: 'Draf Pengadaan Saya', link: '/procurement', col: 'col-12',
+        items: drafts.slice(0,6).map(d => ({
+          left:  `<strong>${d.title}</strong> <span class="text-muted">(${d.year})</span>`,
+          right: `${statusBadge[d.status]} <span class="ms-2 text-muted" style="font-size:0.75rem">${d.items.length} item</span>`
+        }))
+      }
+    ]);
+  }
+
+  // ── KAPRODI ──────────────────────────────────────────────────
+  async function loadKaprodi() {
+    const res    = await fetch('/api/procurement', { headers });
+    const drafts = (await res.json()).data || [];
+
+    const needReview  = drafts.filter(d => d.status === 'locked');
+    const finalized   = drafts.filter(d => d.status === 'finalized');
+    const totalPending = needReview.reduce((sum, d) =>
+      sum + d.items.filter(i => i.approval_status === 'pending').length, 0);
+
+    renderStats([
+      { icon:'⏳', bg:'#faf5ff', val: needReview.length,  label:'Perlu Direview',     sub: 'menunggu keputusan' },
+      { icon:'📝', bg:'#fffbeb', val: totalPending,        label:'Item Pending',        sub: 'belum diputuskan' },
+      { icon:'✅', bg:'#f0fff4', val: finalized.length,    label:'Sudah Difinalisasi',  sub: 'selesai diproses' },
+      { icon:'📊', bg:'#ebf4ff', val: drafts.length,       label:'Total Draf Masuk',    sub: 'semua status' },
+    ]);
+
+    renderInfoPanel([
+      {
+        title: 'Draf Menunggu Review', link: '/procurement', col: 'col-md-6',
+        items: needReview.slice(0,5).map(d => ({
+          left:  `<strong>${d.title}</strong> <span class="text-muted">(${d.year})</span>`,
+          right: `<span class="badge bg-warning text-dark" style="font-size:0.7rem">${d.items.filter(i=>i.approval_status==='pending').length} pending</span>`
+        }))
+      },
+      {
+        title: 'Draf Sudah Difinalisasi', link: '/procurement', col: 'col-md-6',
+        items: finalized.slice(0,5).map(d => ({
+          left:  `<strong>${d.title}</strong> <span class="text-muted">(${d.year})</span>`,
+          right: `<span class="badge bg-success" style="font-size:0.7rem">${d.items.filter(i=>i.approval_status==='approved').length} disetujui</span>`
+        }))
+      }
+    ]);
+  }
+
+  // ── STAF ADMIN ───────────────────────────────────────────────
+  async function loadStafAdmin() {
+    const res    = await fetch('/api/procurement', { headers });
+    const drafts = (await res.json()).data || [];
+
+    const finalized = drafts.filter(d => d.status === 'finalized');
+    const allItems  = finalized.flatMap(d => d.items.filter(i => i.approval_status === 'approved'));
+    const belumLengkap = allItems.filter(i => (i.total_received || 0) < i.quantity);
+
+    renderStats([
+      { icon:'📦', bg:'#ebf4ff', val: finalized.length,      label:'Draf Finalisasi',   sub: 'siap diproses' },
+      { icon:'📋', bg:'#f0fff4', val: allItems.length,        label:'Total Item Approved' },
+      { icon:'⚠️', bg:'#fffbeb', val: belumLengkap.length,    label:'Belum Lengkap',     sub: 'penerimaan belum penuh' },
+      { icon:'🏷️', bg:'#faf5ff', val: '-',                    label:'Inventaris',        sub: 'cek halaman inventaris' },
+    ]);
+
+    renderInfoPanel([
+      {
+        title: 'Draf Finalisasi — Siap Diproses', link: '/procurement', col: 'col-12',
+        items: finalized.slice(0,6).map(d => ({
+          left:  `<strong>${d.title}</strong> <span class="text-muted">(${d.year})</span>`,
+          right: `<span class="badge bg-success" style="font-size:0.7rem">${d.items.filter(i=>i.approval_status==='approved').length} item disetujui</span>`
+        }))
+      }
+    ]);
+  }
+
+  // ── STAF LAB ─────────────────────────────────────────────────
+  async function loadStafLab() {
+    const res  = await fetch('/api/bhp', { headers }).catch(() => null);
+    const bhps = res && res.ok ? ((await res.json()).data || []) : [];
+
+    const hampirHabis = bhps.filter(b => b.current_stock <= 5);
+
+    renderStats([
+      { icon:'🧪', bg:'#ebf4ff', val: bhps.length,         label:'Total Item BHP' },
+      { icon:'⚠️', bg:'#fff5f5', val: hampirHabis.length,   label:'Hampir Habis',    sub: 'stok ≤ 5' },
+      { icon:'🔧', bg:'#fffbeb', val: '-',                  label:'Log Maintenance',  sub: 'cek halaman maintenance' },
+      { icon:'📦', bg:'#f0fff4', val: '-',                  label:'Inventaris',       sub: 'cek halaman inventaris' },
+    ]);
+
+    renderInfoPanel([
+      {
+        title: 'Stok BHP Hampir Habis', link: '/bhp', col: 'col-md-6',
+        items: hampirHabis.slice(0,5).map(b => ({
+          left:  `<strong>${b.item_name}</strong>`,
+          right: `<span class="badge bg-danger" style="font-size:0.7rem">${b.current_stock} ${b.unit}</span>`
+        }))
+      },
+      {
+        title: 'Semua Stok BHP', link: '/bhp', col: 'col-md-6',
+        items: bhps.slice(0,5).map(b => ({
+          left:  `<strong>${b.item_name}</strong>`,
+          right: `<span class="badge bg-light text-dark border" style="font-size:0.7rem">${b.current_stock} ${b.unit}</span>`
+        }))
+      }
+    ]);
   }
 </script>

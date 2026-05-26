@@ -3,7 +3,7 @@ const router  = express.Router();
 const {
   getAllDrafts, getDraftById, createDraft, updateDraft,
   deleteDraft, addItem, updateItem, deleteItem, lockDraft,
-  reviewItem, finalizeDraft
+  reviewItem, finalizeDraft, revertToDraft
 } = require("../controllers/procurementController");
 const { protect, authorize } = require("../middleware/authMiddleware");
 
@@ -23,5 +23,6 @@ router.put("/:id/items/:itemId",          authorize("kepala_lab"), updateItem);
 router.delete("/:id/items/:itemId",       authorize("kepala_lab"), deleteItem);
 router.patch("/:id/items/:itemId/review", authorize("kaprodi"),    reviewItem);
 router.patch("/:id/finalize",             authorize("kaprodi"),    finalizeDraft);
+router.patch("/:id/revert",              authorize("kaprodi"),    revertToDraft);
 
 module.exports = router;

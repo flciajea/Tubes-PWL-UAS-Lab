@@ -100,25 +100,67 @@
     .content-area { padding: 1.5rem; }
 
     /* Custom scrollbar sidebar */
-.sidebar-menu::-webkit-scrollbar {
-  width: 4px;
-}
-.sidebar-menu::-webkit-scrollbar-track {
-  background: transparent;
-}
-.sidebar-menu::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.15);
-  border-radius: 99px;
-}
-.sidebar-menu::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.25);
-}
+    .sidebar-menu::-webkit-scrollbar {
+      width: 4px;
+    }
+    .sidebar-menu::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .sidebar-menu::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.15);
+      border-radius: 99px;
+    }
+    .sidebar-menu::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,255,255,0.25);
+    }
 
-/* Firefox */
-.sidebar-menu {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.15) transparent;
-}
+    /* Firefox */
+    .sidebar-menu {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.15) transparent;
+    }
+
+    /* ── Dashboard ── */
+    .welcome-card {
+      background: linear-gradient(135deg, #1a56db, #1e40af);
+      border-radius: 12px; padding: 1.25rem 1.5rem;
+      color: white; margin-bottom: 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .welcome-card .welcome-text h5 { margin: 0 0 4px; font-size: 1rem; font-weight: 600; }
+    .welcome-card .welcome-text p  { margin: 0; font-size: 0.8rem; opacity: 0.8; }
+    .welcome-card .welcome-role {
+      background: rgba(255,255,255,0.15);
+      padding: 4px 12px; border-radius: 99px;
+      font-size: 0.75rem; font-weight: 500;
+    }
+    .stat-card {
+      background: white; border-radius: 12px;
+      padding: 1.1rem 1.25rem; border: 1px solid #e2e8f0;
+      height: 100%;
+    }
+    .stat-icon {
+      width: 38px; height: 38px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; margin-bottom: 10px;
+    }
+    .stat-val   { font-size: 1.6rem; font-weight: 700; color: #1a202c; line-height: 1; }
+    .stat-label { font-size: 0.78rem; color: #718096; margin-top: 4px; }
+    .stat-sub   { font-size: 0.72rem; color: #a0aec0; margin-top: 2px; }
+    .info-card  { background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
+    .info-card-header {
+      padding: 0.85rem 1.1rem; border-bottom: 1px solid #e2e8f0;
+      font-size: 0.875rem; font-weight: 600; color: #1a202c;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .info-list { list-style: none; padding: 0; margin: 0; }
+    .info-list li {
+      padding: 0.7rem 1.1rem; border-bottom: 1px solid #f0f4f8;
+      font-size: 0.825rem; display: flex;
+      align-items: center; justify-content: space-between;
+    }
+    .info-list li:last-child { border-bottom: none; }
+    .empty-info { text-align: center; padding: 2rem; color: #a0aec0; font-size: 0.825rem; }
 
   </style>
 </head>
