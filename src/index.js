@@ -67,6 +67,22 @@ app.get('/inventories', (req, res) => {
   res.render('pages/inventories', { title: 'Inventaris', page: 'inventories' });
 });
 
+// Lab routes (Staf Laboratorium)
+const labRoutes = require("./routes/labRoutes");
+app.use("/api/lab", labRoutes);
+
+app.get('/lab-management', (req, res) => {
+  res.render('pages/lab-management', { title: 'Manajemen Laboratorium', page: 'lab' });
+});
+
+app.get('/bhp-stocks', (req, res) => {
+  res.render('pages/bhp-stocks', { title: 'Stok BHP', page: 'bhp' });
+});
+
+app.get('/maintenance', (req, res) => {
+  res.render('pages/maintenance', { title: 'Log Maintenance', page: 'maintenance' });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server berjalan di port ${PORT}`);

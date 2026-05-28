@@ -205,33 +205,44 @@
 
   // ── STAF LAB ─────────────────────────────────────────────────
   async function loadStafLab() {
-    const res  = await fetch('/api/bhp', { headers }).catch(() => null);
-    const bhps = res && res.ok ? ((await res.json()).data || []) : [];
+    try {
+      const [bhpRes, statsRes] = await Promise.all([
+        fetch('/api/lab/bhp-stocks', { headers }).catch(() => null),
+        fetch('/api/lab/stats', { headers }).catch(() => null)
+      ]);
+      
+      const bhps = bhpRes && bhpRes.ok ? ((await bhpRes.json()).data || []) : [];
+      const stats = statsRes && statsRes.ok ? ((await statsRes.json()).data || {}) : {};
 
-    const hampirHabis = bhps.filter(b => b.current_stock <= 5);
+      const hampirHabis = bhps.filter(b => b.quantity <= b.reorder_level && b.quantity > 0);
+      const habis = bhps.filter(b => b.quantity === 0);
 
-    renderStats([
-      { icon:'🧪', bg:'#ebf4ff', val: bhps.length,         label:'Total Item BHP' },
-      { icon:'⚠️', bg:'#fff5f5', val: hampirHabis.length,   label:'Hampir Habis',    sub: 'stok ≤ 5' },
-      { icon:'🔧', bg:'#fffbeb', val: '-',                  label:'Log Maintenance',  sub: 'cek halaman maintenance' },
-      { icon:'📦', bg:'#f0fff4', val: '-',                  label:'Inventaris',       sub: 'cek halaman inventaris' },
-    ]);
+      renderStats([
+        { icon:'🧪', bg:'#ebf4ff', val: stats.totalBhpItems || 0,        label:'Total Item BHP' },
+        { icon:'⚠️', bg:'#fff5f5', val: stats.lowStockItems || 0,        label:'Stok Rendah',      sub: 'perlu reorder' },
+        { icon:'🔧', bg:'#fffbeb', val: stats.monthlyMaintenanceLogs || 0, label:'Maintenance Bulan Ini' },
+        { icon:'📊', bg:'#f0fff4', val: stats.totalMaintenanceLogs || 0, label:'Total Maintenance',  sub: 'semua waktu' },
+      ]);
 
-    renderInfoPanel([
-      {
-        title: 'Stok BHP Hampir Habis', link: '/bhp', col: 'col-md-6',
-        items: hampirHabis.slice(0,5).map(b => ({
-          left:  `<strong>${b.item_name}</strong>`,
-          right: `<span class="badge bg-danger" style="font-size:0.7rem">${b.current_stock} ${b.unit}</span>`
-        }))
-      },
-      {
-        title: 'Semua Stok BHP', link: '/bhp', col: 'col-md-6',
-        items: bhps.slice(0,5).map(b => ({
-          left:  `<strong>${b.item_name}</strong>`,
-          right: `<span class="badge bg-light text-dark border" style="font-size:0.7rem">${b.current_stock} ${b.unit}</span>`
-        }))
-      }
-    ]);
+      renderInfoPanel([
+        {
+          title: 'Stok BHP Rendah/Habis', link: '/bhp-stocks', col: 'col-md-6',
+          items: [...hampirHabis, ...habis].slice(0,5).map(b => ({
+            left:  `<strong>${b.item_name}</strong>`,
+            right: `<span class="badge ${b.quantity === 0 ? 'bg-danger' : 'bg-warning text-dark'}" style="font-size:0.7rem">${b.quantity} ${b.unit}</span>`
+          }))
+        },
+        {
+          title: 'Quick Actions', link: '', col: 'col-md-6',
+          items: [
+            { left: '<a href="/bhp-stocks" class="btn btn-sm btn-outline-primary">📦 Kelola Stok BHP</a>', right: '' },
+            { left: '<a href="/maintenance" class="btn btn-sm btn-outline-primary">🔧 Log Maintenance</a>', right: '' },
+            { left: '<a href="/lab-management" class="btn btn-sm btn-outline-primary">📊 Dashboard Lab</a>', right: '' }
+          ]
+        }
+      ]);
+    } catch (error) {
+      console.error('Error loading Staf Lab dashboard:', error);
+    }
   }
 </script>

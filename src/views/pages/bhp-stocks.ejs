@@ -1,0 +1,310 @@
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <h5 class="fw-bold mb-0"><i class="bi bi-archive me-2"></i>Manajemen Stok BHP</h5>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addBhpModal">
+      <i class="bi bi-plus-lg"></i> Tambah Stok BHP
+    </button>
+  </div>
+
+  <!-- Card -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white d-flex align-items-center justify-content-between py-3">
+      <div class="input-group" style="max-width: 280px;">
+        <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+        <input type="text" class="form-control bg-light border-start-0" id="searchBhp" placeholder="Cari nama BHP..."/>
+      </div>
+      <div class="d-flex gap-2">
+        <select class="form-select form-select-sm" id="filterCategory" style="max-width: 200px;">
+          <option value="">Semua Kategori</option>
+          <option value="perangkat keras & komponen">Perangkat Keras & Komponen</option>
+          <option value="bahan pembersih & perawatan lab">Bahan Pembersih & Perawatan Lab</option>
+          <option value="alat tulis">Alat Tulis</option>
+          <option value="tinta & printer supplies">Tinta & Printer Supplies</option>
+          <option value="jaringan & kelistrikan">Jaringan & Kelistrikan</option>
+          <option value="lainnya">Lainnya</option>
+        </select>
+        <select class="form-select form-select-sm" id="filterStatus" style="max-width: 150px;">
+          <option value="">Semua Status</option>
+          <option value="normal">Normal</option>
+          <option value="rendah">Rendah</option>
+          <option value="habis">Habis</option>
+        </select>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="text-muted small fw-semibold ps-3">#</th>
+              <th class="text-muted small fw-semibold">Nama BHP</th>
+              <th class="text-muted small fw-semibold">Kategori</th>
+              <th class="text-muted small fw-semibold">Stok</th>
+              <th class="text-muted small fw-semibold">Unit</th>
+              <th class="text-muted small fw-semibold">Min</th>
+              <th class="text-muted small fw-semibold">Status</th>
+              <th class="text-muted small fw-semibold">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="bhpStockList">
+            <tr><td colspan="8" class="text-center text-muted py-4">Memuat data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tambah BHP -->
+<div class="modal fade" id="addBhpModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Tambah Stok BHP</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="addBhpForm">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nama BHP</label>
+            <input type="text" class="form-control" id="itemName" required/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Kategori</label>
+            <select class="form-select" id="category" required>
+              <option value="">-- Pilih Kategori --</option>
+              <option value="perangkat keras & komponen">Perangkat Keras & Komponen</option>
+              <option value="bahan pembersih & perawatan lab">Bahan Pembersih & Perawatan Lab</option>
+              <option value="alat tulis">Alat Tulis</option>
+              <option value="tinta & printer supplies">Tinta & Printer Supplies</option>
+              <option value="jaringan & kelistrikan">Jaringan & Kelistrikan</option>
+              <option value="lainnya">Lainnya</option>
+            </select>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Unit</label>
+              <input type="text" class="form-control" id="unit" value="pcs" required/>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Jumlah</label>
+              <input type="number" class="form-control" id="quantity" min="0" required/>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Reorder Level</label>
+            <input type="number" class="form-control" id="reorderLevel" value="5" min="0" required/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Catatan</label>
+            <textarea class="form-control" id="notes" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary btn-sm">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Edit BHP -->
+<div class="modal fade" id="editBhpModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Stok BHP</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="editBhpForm">
+        <input type="hidden" id="editBhpId"/>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nama BHP</label>
+            <input type="text" class="form-control" id="editItemName" required/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Kategori</label>
+            <select class="form-select" id="editCategory" required>
+              <option value="">-- Pilih Kategori --</option>
+              <option value="perangkat keras & komponen">Perangkat Keras & Komponen</option>
+              <option value="bahan pembersih & perawatan lab">Bahan Pembersih & Perawatan Lab</option>
+              <option value="alat tulis">Alat Tulis</option>
+              <option value="tinta & printer supplies">Tinta & Printer Supplies</option>
+              <option value="jaringan & kelistrikan">Jaringan & Kelistrikan</option>
+              <option value="lainnya">Lainnya</option>
+            </select>
+          </div>bhp-table-row">
+          <div class="bhp-item-name">${bhp.item_name}</div>
+          <div class="bhp-category">${bhp.category}</div>
+          <div class="bhp-quantity">${bhp.quantity}</div>
+          <div>${bhp.unit}</div>
+          <div>${bhp.reorder_level}</div>
+          <div>
+            <span class="bhp-status-badge status-${bhp.stock_status}">
+              ${bhp.stock_status === 'normal' ? 'Normal' : bhp.stock_status === 'rendah' ? 'Rendah' : 'Habis'}
+            </span>
+          </div>
+          <div class="bhp-actions">
+            <button class="btn btn-sm btn-outline-primary" onclick="editBhpStock('${bhp._id}')">
+              <i class="bi bi-pencil"></i> Edit
+            </button>
+          </div>
+        </div>
+      `).join('') : '<div class="empty-state">Tidak ada data stok BHP
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary btn-sm">Update</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const token = localStorage.getItem('token');
+  const headers = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+
+  // Load BHP Stocks
+  async function loadBhpStocks(search = '', category = '', status = '') {
+    try {
+      const res = await fetch('/api/lab/bhp-stocks', { headers });
+      const result = await res.json();
+      const bhpStocks = result.data || [];
+
+      let filtered = bhpStocks;
+      if (search) filtered = filtered.filter(b => b.item_name.toLowerCase().includes(search.toLowerCase()));
+      if (category) filtered = filtered.filter(b => b.category === category);
+      if (status) filtered = filtered.filter(b => b.stock_status === status);
+
+      const html = filtered.length ? filtered.map((bhp, idx) => `
+        <tr>
+          <td class="ps-3 text-muted small">${idx + 1}</td>
+          <td><strong>${bhp.item_name}</strong></td>
+          <td><small class="text-muted">${bhp.category}</small></td>
+          <td><strong>${bhp.quantity}</strong></td>
+          <td>${bhp.unit}</td>
+          <td>${bhp.reorder_level}</td>
+          <td>
+            <span class="badge ${bhp.stock_status === 'normal' ? 'bg-success' : bhp.stock_status === 'rendah' ? 'bg-warning text-dark' : 'bg-danger'}">
+              ${bhp.stock_status === 'normal' ? 'Normal' : bhp.stock_status === 'rendah' ? 'Rendah' : 'Habis'}
+            </span>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-outline-primary" onclick="editBhpStock('${bhp._id}')">
+              <i class="bi bi-pencil"></i> Edit
+            </button>
+          </td>
+        </tr>
+      `).join('') : '<tr><td colspan="8" class="text-center text-muted py-4">Tidak ada data stok BHP</td></tr>';
+
+      document.getElementById('bhpStockList').innerHTML = html;
+    } catch (error) {
+      console.error('Error loading BHP stocks:', error);
+      alert('Gagal memuat data stok BHP');
+    }
+  }
+
+  // Edit BHP Stock
+  async function editBhpStock(id) {
+    try {
+      const res = await fetch(`/api/lab/bhp-stocks/${id}`, { headers });
+      const result = await res.json();
+      const bhp = result.data;
+
+      document.getElementById('editBhpId').value = bhp._id;
+      document.getElementById('editItemName').value = bhp.item_name;
+      document.getElementById('editCategory').value = bhp.category;
+      document.getElementById('editUnit').value = bhp.unit;
+      document.getElementById('editQuantity').value = bhp.quantity;
+      document.getElementById('editReorderLevel').value = bhp.reorder_level;
+      document.getElementById('editNotes').value = bhp.notes || '';
+
+      new bootstrap.Modal(document.getElementById('editBhpModal')).show();
+    } catch (error) {
+      console.error('Error loading BHP detail:', error);
+      alert('Gagal memuat detail BHP');
+    }
+  }
+
+  // Form Handlers
+  document.getElementById('addBhpForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/lab/bhp-stocks', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          item_name: document.getElementById('itemName').value,
+          category: document.getElementById('category').value,
+          unit: document.getElementById('unit').value,
+          quantity: parseInt(document.getElementById('quantity').value),
+          reorder_level: parseInt(document.getElementById('reorderLevel').value),
+          notes: document.getElementById('notes').value,
+        })
+      });
+
+      if (res.ok) {
+        alert('Stok BHP berhasil ditambahkan');
+        bootstrap.Modal.getInstance(document.getElementById('addBhpModal')).hide();
+        document.getElementById('addBhpForm').reset();
+        loadBhpStocks();
+      } else {
+        const err = await res.json();
+        alert('Error: ' + err.message);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Gagal menambahkan stok BHP');
+    }
+  });
+
+  document.getElementById('editBhpForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('editBhpId').value;
+    try {
+      const res = await fetch(`/api/lab/bhp-stocks/${id}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({
+          item_name: document.getElementById('editItemName').value,
+          category: document.getElementById('editCategory').value,
+          unit: document.getElementById('editUnit').value,
+          quantity: parseInt(document.getElementById('editQuantity').value),
+          reorder_level: parseInt(document.getElementById('editReorderLevel').value),
+          notes: document.getElementById('editNotes').value,
+        })
+      });
+
+      if (res.ok) {
+        alert('Stok BHP berhasil diupdate');
+        bootstrap.Modal.getInstance(document.getElementById('editBhpModal')).hide();
+        loadBhpStocks();
+      } else {
+        const err = await res.json();
+        alert('Error: ' + err.message);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Gagal mengupdate stok BHP');
+    }
+  });
+
+  // Filter handlers
+  document.getElementById('searchBhp').addEventListener('input', (e) => {
+    loadBhpStocks(e.target.value, document.getElementById('filterCategory').value, document.getElementById('filterStatus').value);
+  });
+  document.getElementById('filterCategory').addEventListener('change', (e) => {
+    loadBhpStocks(document.getElementById('searchBhp').value, e.target.value, document.getElementById('filterStatus').value);
+  });
+  document.getElementById('filterStatus').addEventListener('change', (e) => {
+    loadBhpStocks(document.getElementById('searchBhp').value, document.getElementById('filterCategory').value, e.target.value);
+  });
+
+  // Load on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    loadBhpStocks();
+  });
+</script>

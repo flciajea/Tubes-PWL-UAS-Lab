@@ -1,0 +1,229 @@
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="mb-4">
+    <h5 style="margin: 0; font-weight: 700;">Dashboard Laboratorium</h5>
+    <small class="text-muted">Manajemen stok BHP dan maintenance inventaris</small>
+  </div>
+
+  <!-- Statistics Row -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-6 col-lg-3">
+      <div class="stat-card" style="background: white; border-radius: 8px; padding: 1.5rem; border-left: 4px solid #1a56db; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+        <div style="font-size: 0.875rem; color: #718096; font-weight: 600; text-transform: uppercase; margin-bottom: 0.5rem;">Total BHP Items</div>
+        <div style="font-size: 2rem; font-weight: 700; color: #1a202c; margin-bottom: 0.25rem;" id="totalBhpItems">-</div>
+        <small class="text-muted">Barang habis pakai</small>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <div class="stat-card" style="background: white; border-radius: 8px; padding: 1.5rem; border-left: 4px solid #f59e0b; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+        <div style="font-size: 0.875rem; color: #718096; font-weight: 600; text-transform: uppercase; margin-bottom: 0.5rem;">Stok Rendah</div>
+        <div style="font-size: 2rem; font-weight: 700; color: #856404; margin-bottom: 0.25rem;" id="lowStockItems">-</div>
+        <small class="text-muted">Perlu reorder segera</small>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <div class="stat-card" style="background: white; border-radius: 8px; padding: 1.5rem; border-left: 4px solid #10b981; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+        <div style="font-size: 0.875rem; color: #718096; font-weight: 600; text-transform: uppercase; margin-bottom: 0.5rem;">Total Maintenance</div>
+        <div style="font-size: 2rem; font-weight: 700; color: #155724; margin-bottom: 0.25rem;" id="totalMaintenance">-</div>
+        <small class="text-muted">Semua log maintenance</small>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <div class="stat-card" style="background: white; border-radius: 8px; padding: 1.5rem; border-left: 4px solid #0ea5e9; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+        <div style="font-size: 0.875rem; color: #718096; font-weight: 600; text-transform: uppercase; margin-bottom: 0.5rem;">Maintenance Bulan Ini</div>
+        <div style="font-size: 2rem; font-weight: 700; color: #084298; margin-bottom: 0.25rem;" id="monthlyMaintenance">-</div>
+        <small class="text-muted">Aktivitas maintenance terkini</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-6">
+      <div style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+        <h6 style="margin-bottom: 1rem; font-weight: 700;">Quick Actions</h6>
+        <div class="d-grid gap-2">
+          <a href="/bhp-stocks" class="btn btn-outline-primary btn-sm" style="justify-content: flex-start;">
+            <i class="bi bi-boxes" style="margin-right: 0.5rem;"></i> Kelola Stok BHP
+          </a>
+          <a href="/maintenance" class="btn btn-outline-primary btn-sm" style="justify-content: flex-start;">
+            <i class="bi bi-tools" style="margin-right: 0.5rem;"></i> Log Maintenance
+          </a>
+          <button class="btn btn-outline-primary btn-sm" style="justify-content: flex-start;" data-bs-toggle="modal" data-bs-target="#quickAddMaintenanceModal">
+            <i class="bi bi-plus-lg" style="margin-right: 0.5rem;"></i> Tambah Maintenance Cepat
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+        <h6 style="margin-bottom: 1rem; font-weight: 700;">Informasi</h6>
+        <ul style="margin: 0; padding: 0; list-style: none; font-size: 0.875rem; line-height: 1.8; color: #718096;">
+          <li><i class="bi bi-info-circle"></i> Pantau stok BHP yang mendekati reorder level</li>
+          <li><i class="bi bi-info-circle"></i> Catat setiap aktivitas maintenance dan penggunaan BHP</li>
+          <li><i class="bi bi-info-circle"></i> Stok BHP akan otomatis berkurang saat digunakan dalam maintenance</li>
+          <li><i class="bi bi-info-circle"></i> Update kondisi barang sesuai dengan hasil maintenance</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Maintenance Activities -->
+  <div style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+    <h6 style="margin-bottom: 1rem; font-weight: 700;">Aktivitas Maintenance Terbaru</h6>
+    <div id="recentMaintenanceList" style="max-height: 400px; overflow-y: auto;">
+      <p class="text-center text-muted py-3">Loading...</p>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Add Maintenance Modal -->
+<div class="modal fade" id="quickAddMaintenanceModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Tambah Maintenance Cepat</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="quickAddMaintenanceForm">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Pilih Inventaris</label>
+            <select class="form-select" id="quickInventoryId" required>
+              <option value="">-- Pilih Inventaris --</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Tipe Maintenance</label>
+            <select class="form-select" id="quickMaintenanceType" required>
+              <option value="">-- Pilih Tipe --</option>
+              <option value="preventif">Preventif</option>
+              <option value="korektif">Korektif</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Kondisi Sesudah</label>
+            <select class="form-select" id="quickConditionAfter" required>
+              <option value="">-- Pilih --</option>
+              <option value="baik">Baik</option>
+              <option value="rusak_ringan">Rusak Ringan</option>
+              <option value="rusak_berat">Rusak Berat</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Deskripsi Singkat</label>
+            <textarea class="form-control" id="quickDescription" rows="2" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary btn-sm">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const token = localStorage.getItem('token');
+  const headers = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+
+  // Load Statistics
+  async function loadStats() {
+    try {
+      const res = await fetch('/api/lab/stats', { headers });
+      const result = await res.json();
+      const stats = result.data;
+
+      document.getElementById('totalBhpItems').textContent = stats.totalBhpItems || 0;
+      document.getElementById('lowStockItems').textContent = stats.lowStockItems || 0;
+      document.getElementById('totalMaintenance').textContent = stats.totalMaintenanceLogs || 0;
+      document.getElementById('monthlyMaintenance').textContent = stats.monthlyMaintenanceLogs || 0;
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    }
+  }
+
+  // Load Recent Maintenance
+  async function loadRecentMaintenance() {
+    try {
+      const res = await fetch('/api/lab/maintenance-logs', { headers });
+      const result = await res.json();
+      const logs = (result.data || []).slice(0, 5);
+
+      const html = logs.length ? logs.map(log => `
+        <div style="padding: 0.75rem 0; border-bottom: 1px solid #dee2e6;">
+          <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div>
+              <strong>${log.item_name}</strong>
+              <div style="font-size: 0.875rem; color: #718096; margin-top: 0.25rem;">
+                ${log.maintenance_type.toUpperCase()} - ${log.description}
+              </div>
+            </div>
+            <small class="text-muted">${new Date(log.maintenance_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })}</small>
+          </div>
+        </div>
+      `).join('') : '<p class="text-center text-muted py-3">Belum ada aktivitas maintenance</p>';
+
+      document.getElementById('recentMaintenanceList').innerHTML = html;
+    } catch (error) {
+      console.error('Error loading recent maintenance:', error);
+    }
+  }
+
+  // Load Inventories untuk dropdown
+  async function loadInventoriesForQuick() {
+    try {
+      const res = await fetch('/api/lab/inventories-maintenance', { headers });
+      const result = await res.json();
+      const inventories = result.data || [];
+      const select = document.getElementById('quickInventoryId');
+      select.innerHTML = '<option value="">-- Pilih Inventaris --</option>' + 
+        inventories.map(inv => `<option value="${inv._id}">${inv.item_name}</option>`).join('');
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+
+  // Quick add maintenance form
+  document.getElementById('quickAddMaintenanceForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    try {
+      const res = await fetch('/api/lab/maintenance-logs', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          inventory_id: document.getElementById('quickInventoryId').value,
+          maintenance_type: document.getElementById('quickMaintenanceType').value,
+          description: document.getElementById('quickDescription').value,
+          condition_before: 'baik',
+          condition_after: document.getElementById('quickConditionAfter').value,
+          used_bhp: [],
+          maintenance_date: new Date().toISOString(),
+        })
+      });
+
+      if (res.ok) {
+        alert('Maintenance berhasil dicatat');
+        bootstrap.Modal.getInstance(document.getElementById('quickAddMaintenanceModal')).hide();
+        document.getElementById('quickAddMaintenanceForm').reset();
+        loadStats();
+        loadRecentMaintenance();
+      } else {
+        const err = await res.json();
+        alert('Error: ' + err.message);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Gagal menyimpan maintenance');
+    }
+  });
+
+  // Load on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    loadStats();
+    loadRecentMaintenance();
+    loadInventoriesForQuick();
+  });
+</script>

@@ -1,0 +1,380 @@
+<style>
+  .maintenance-item {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    border-left: 4px solid #1a56db;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    margin-bottom: 1rem;
+  }
+  .maintenance-item h6 {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #1a202c;
+  }
+  .maintenance-item .info {
+    font-size: 0.875rem;
+    color: #718096;
+    margin-bottom: 0.5rem;
+  }
+  .condition-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .condition-baik { background: #d4edda; color: #155724; }
+  .condition-rusak_ringan { background: #fff3cd; color: #856404; }
+  .condition-rusak_berat { background: #f8d7da; color: #721c24; }
+  .maintenance-type {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-right: 0.5rem;
+  }
+  .type-preventif { background: #cfe2ff; color: #084298; }
+  .type-korektif { background: #f8d7da; color: #721c24; }
+</style>
+
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h5 style="margin: 0; font-weight: 700;">Log Maintenance Inventaris</h5>
+      <small class="text-muted">Catat aktivitas maintenance dan penggunaan BHP</small>
+    </div>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addMaintenanceModal">
+      <i class="bi bi-plus-lg"></i> Tambah Log Maintenance
+    </button>
+  </div>
+
+  <!-- Filter & Search -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-6">
+      <input type="text" class="form-control form-control-sm" id="searchMaintenance" placeholder="Cari nama barang..."/>
+    </div>
+    <div class="col-md-3">
+      <select class="form-select form-select-sm" id="filterType">
+        <option value="">Semua Tipe</option>
+        <option value="preventif">Preventif</option>
+        <option value="korektif">Korektif</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <input type="month" class="form-control form-control-sm" id="filterMonth"/>
+    </div>
+  </div>
+
+  <!-- Maintenance Logs List -->
+  <div id="maintenanceList"></div>
+</div>
+
+<!-- Modal Tambah Maintenance -->
+<div class="modal fade" id="addMaintenanceModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Tambah Log Maintenance</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="addMaintenanceForm">
+        <div class="modal-body">
+          <!-- Pilih Inventaris -->
+          <div class="mb-3">
+            <label class="form-label">Pilih Inventaris</label>
+            <select class="form-select" id="inventoryId" required>
+              <option value="">-- Pilih Inventaris --</option>
+            </select>
+          </div>
+
+          <!-- Tipe Maintenance -->
+          <div class="mb-3">
+            <label class="form-label">Tipe Maintenance</label>
+            <select class="form-select" id="maintenanceType" required>
+              <option value="">-- Pilih Tipe --</option>
+              <option value="preventif">Preventif (Pencegahan)</option>
+              <option value="korektif">Korektif (Perbaikan)</option>
+            </select>
+          </div>
+
+          <!-- Kondisi Sebelum & Sesudah -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Kondisi Sebelum</label>
+              <select class="form-select" id="conditionBefore" required>
+                <option value="">-- Pilih --</option>
+                <option value="baik">Baik</option>
+                <option value="rusak_ringan">Rusak Ringan</option>
+                <option value="rusak_berat">Rusak Berat</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Kondisi Sesudah</label>
+              <select class="form-select" id="conditionAfter" required>
+                <option value="">-- Pilih --</option>
+                <option value="baik">Baik</option>
+                <option value="rusak_ringan">Rusak Ringan</option>
+                <option value="rusak_berat">Rusak Berat</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Deskripsi -->
+          <div class="mb-3">
+            <label class="form-label">Deskripsi Maintenance</label>
+            <textarea class="form-control" id="description" rows="3" required placeholder="Jelaskan aktivitas maintenance yang dilakukan..."></textarea>
+          </div>
+
+          <!-- Tanggal Maintenance -->
+          <div class="mb-3">
+            <label class="form-label">Tanggal Maintenance</label>
+            <input type="datetime-local" class="form-control" id="maintenanceDate" required/>
+          </div>
+
+          <!-- BHP yang Digunakan -->
+          <div class="mb-3">
+            <label class="form-label">BHP yang Digunakan (Opsional)</label>
+            <div id="bhpUsedList" style="max-height: 200px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 4px; padding: 0.75rem;">
+              <small class="text-muted">Tidak ada BHP dipilih</small>
+            </div>
+            <button type="button" class="btn btn-outline-secondary btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#selectBhpModal">
+              <i class="bi bi-plus-lg"></i> Tambah BHP
+            </button>
+          </div>
+
+          <!-- Catatan -->
+          <div class="mb-3">
+            <label class="form-label">Catatan Tambahan</label>
+            <textarea class="form-control" id="notes" rows="2" placeholder="Catatan opsional..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary btn-sm">Simpan Maintenance</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Pilih BHP -->
+<div class="modal fade" id="selectBhpModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Pilih BHP yang Digunakan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="bhpStocksList" style="max-height: 400px; overflow-y: auto;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const token = localStorage.getItem('token');
+  const headers = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+  let selectedBhpList = [];
+
+  // Load Maintenance Logs
+  async function loadMaintenanceLogs(search = '', type = '', month = '') {
+    try {
+      const res = await fetch('/api/lab/maintenance-logs', { headers });
+      const result = await res.json();
+      let logs = result.data || [];
+
+      if (search) logs = logs.filter(l => l.item_name.toLowerCase().includes(search.toLowerCase()));
+      if (type) logs = logs.filter(l => l.maintenance_type === type);
+      if (month) {
+        const [year, m] = month.split('-');
+        logs = logs.filter(l => {
+          const d = new Date(l.maintenance_date);
+          return d.getFullYear() === parseInt(year) && (d.getMonth() + 1) === parseInt(m);
+        });
+      }
+
+      const html = logs.length ? logs.map(log => `
+        <div class="maintenance-item">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+              <h6>${log.item_name}</h6>
+              <span class="maintenance-type type-${log.maintenance_type}">${log.maintenance_type.toUpperCase()}</span>
+            </div>
+            <small class="text-muted">${new Date(log.maintenance_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</small>
+          </div>
+          <div class="info">
+            <strong>Deskripsi:</strong> ${log.description}
+          </div>
+          <div class="info">
+            <strong>Kondisi:</strong>
+            <span class="condition-badge condition-${log.condition_before}">${log.condition_before.replace(/_/g, ' ').toUpperCase()}</span>
+            <i class="bi bi-arrow-right"></i>
+            <span class="condition-badge condition-${log.condition_after}">${log.condition_after.replace(/_/g, ' ').toUpperCase()}</span>
+          </div>
+          ${log.used_bhp && log.used_bhp.length > 0 ? `
+            <div class="info">
+              <strong>BHP Digunakan:</strong><br/>
+              ${log.used_bhp.map(b => `<small>• ${b.item_name}: ${b.quantity_used} ${b.bhp_id?.unit || 'pcs'}</small>`).join('<br/>')}
+            </div>
+          ` : ''}
+          <div class="info" style="margin-top: 0.75rem; color: #a0aec0;">
+            Oleh: ${log.performed_by?.name || '-'} | ${log.performed_by?.nrp_nip || '-'}
+          </div>
+        </div>
+      `).join('') : '<p class="text-center text-muted mt-4">Tidak ada log maintenance</p>';
+
+      document.getElementById('maintenanceList').innerHTML = html;
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Gagal memuat log maintenance');
+    }
+  }
+
+  // Load Inventories untuk dropdown
+  async function loadInventories() {
+    try {
+      const res = await fetch('/api/lab/inventories-maintenance', { headers });
+      const result = await res.json();
+      const inventories = result.data || [];
+      const select = document.getElementById('inventoryId');
+      select.innerHTML = '<option value="">-- Pilih Inventaris --</option>' + 
+        inventories.map(inv => `<option value="${inv._id}">${inv.item_name} (${inv.label_number || 'Tanpa Label'})</option>`).join('');
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+
+  // Load BHP Stocks untuk pilih
+  async function loadBhpForSelection() {
+    try {
+      const res = await fetch('/api/lab/bhp-stocks', { headers });
+      const result = await res.json();
+      const bhpStocks = result.data || [];
+      const html = bhpStocks.length ? bhpStocks.map(bhp => `
+        <div style="padding: 0.75rem; border-bottom: 1px solid #dee2e6;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong>${bhp.item_name}</strong><br/>
+              <small class="text-muted">Stok: ${bhp.quantity} ${bhp.unit}</small>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectBhp('${bhp._id}', '${bhp.item_name}', '${bhp.unit}')">
+              Pilih
+            </button>
+          </div>
+        </div>
+      `).join('') : '<p class="text-muted text-center py-3">Tidak ada stok BHP</p>';
+      document.getElementById('bhpStocksList').innerHTML = html;
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+
+  function selectBhp(bhpId, bhpName, unit) {
+    // Show quantity prompt
+    const qty = prompt(`Berapa ${unit} ${bhpName} yang digunakan?`, '1');
+    if (qty && parseInt(qty) > 0) {
+      selectedBhpList.push({ bhp_id: bhpId, item_name: bhpName, quantity_used: parseInt(qty), unit });
+      updateBhpDisplay();
+      bootstrap.Modal.getInstance(document.getElementById('selectBhpModal')).hide();
+    }
+  }
+
+  function updateBhpDisplay() {
+    if (selectedBhpList.length === 0) {
+      document.getElementById('bhpUsedList').innerHTML = '<small class="text-muted">Tidak ada BHP dipilih</small>';
+    } else {
+      document.getElementById('bhpUsedList').innerHTML = selectedBhpList.map((bhp, idx) => `
+        <div style="padding: 0.5rem; background: #f8f9fa; border-radius: 4px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+          <span>${bhp.item_name}: ${bhp.quantity_used} ${bhp.unit}</span>
+          <button type="button" class="btn btn-xs btn-outline-danger" onclick="removeBhp(${idx})" style="padding: 0.2rem 0.4rem; font-size: 0.7rem;">×</button>
+        </div>
+      `).join('');
+    }
+  }
+
+  function removeBhp(idx) {
+    selectedBhpList.splice(idx, 1);
+    updateBhpDisplay();
+  }
+
+  // Set current datetime
+  document.addEventListener('DOMContentLoaded', () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('maintenanceDate').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+    loadMaintenanceLogs();
+    loadInventories();
+  });
+
+  // When add maintenance modal opens, load BHP options
+  document.getElementById('addMaintenanceModal').addEventListener('show.bs.modal', () => {
+    selectedBhpList = [];
+    updateBhpDisplay();
+  });
+
+  document.getElementById('selectBhpModal').addEventListener('show.bs.modal', () => {
+    loadBhpForSelection();
+  });
+
+  // Form submission
+  document.getElementById('addMaintenanceForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const usedBhp = selectedBhpList.map(b => ({
+      bhp_id: b.bhp_id,
+      item_name: b.item_name,
+      quantity_used: b.quantity_used
+    }));
+
+    try {
+      const res = await fetch('/api/lab/maintenance-logs', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          inventory_id: document.getElementById('inventoryId').value,
+          maintenance_type: document.getElementById('maintenanceType').value,
+          description: document.getElementById('description').value,
+          condition_before: document.getElementById('conditionBefore').value,
+          condition_after: document.getElementById('conditionAfter').value,
+          used_bhp: usedBhp,
+          maintenance_date: document.getElementById('maintenanceDate').value,
+          notes: document.getElementById('notes').value,
+        })
+      });
+
+      if (res.ok) {
+        alert('Log maintenance berhasil disimpan dan stok BHP terupdate');
+        bootstrap.Modal.getInstance(document.getElementById('addMaintenanceModal')).hide();
+        document.getElementById('addMaintenanceForm').reset();
+        selectedBhpList = [];
+        loadMaintenanceLogs();
+      } else {
+        const err = await res.json();
+        alert('Error: ' + err.message);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Gagal menyimpan log maintenance');
+    }
+  });
+
+  // Filter handlers
+  document.getElementById('searchMaintenance').addEventListener('input', (e) => {
+    loadMaintenanceLogs(e.target.value, document.getElementById('filterType').value, document.getElementById('filterMonth').value);
+  });
+  document.getElementById('filterType').addEventListener('change', (e) => {
+    loadMaintenanceLogs(document.getElementById('searchMaintenance').value, e.target.value, document.getElementById('filterMonth').value);
+  });
+  document.getElementById('filterMonth').addEventListener('change', (e) => {
+    loadMaintenanceLogs(document.getElementById('searchMaintenance').value, document.getElementById('filterType').value, e.target.value);
+  });
+</script>

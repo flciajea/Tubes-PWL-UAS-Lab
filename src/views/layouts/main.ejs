@@ -220,11 +220,15 @@
 
   <!-- Staf Lab only -->
   <div id="menu-staf_lab" style="display:none">
+    <div class="menu-label mt-2">Dashboard</div>
+    <a href="/lab-management" class="menu-item <%= (locals.page === 'lab') ? 'active' : '' %>">
+      <i class="bi bi-graph-up"></i> Dashboard Lab
+    </a>
     <div class="menu-label mt-2">Aset & BHP</div>
     <a href="/inventories" class="menu-item <%= (locals.page === 'inventories') ? 'active' : '' %>">
       <i class="bi bi-box-seam"></i> Inventaris
     </a>
-    <a href="/bhp" class="menu-item <%= (locals.page === 'bhp') ? 'active' : '' %>">
+    <a href="/bhp-stocks" class="menu-item <%= (locals.page === 'bhp') ? 'active' : '' %>">
       <i class="bi bi-archive"></i> Stok BHP
     </a>
     <div class="menu-label mt-2">Maintenance</div>
