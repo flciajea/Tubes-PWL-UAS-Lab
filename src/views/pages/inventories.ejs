@@ -1,0 +1,424 @@
+<!-- Tab navigasi -->
+<ul class="nav nav-tabs mb-4" id="inv-tabs">
+  <li class="nav-item">
+    <button class="nav-link active" onclick="showTab('tab-inventaris')">
+      <i class="bi bi-box-seam me-1"></i> Inventaris
+    </button>
+  </li>
+  <li class="nav-item" id="tab-btn-penerimaan">
+    <button class="nav-link" onclick="showTab('tab-penerimaan')">
+      <i class="bi bi-truck me-1"></i> Penerimaan Barang
+    </button>
+  </li>
+</ul>
+
+<div id="alert-top" class="alert d-none"></div>
+
+<!-- ── TAB INVENTARIS ── -->
+<div id="tab-inventaris">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <h5 class="fw-bold mb-0"><i class="bi bi-box-seam me-2"></i>Daftar Inventaris</h5>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white d-flex align-items-center justify-content-between py-3">
+      <div class="input-group" style="max-width:280px">
+        <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+        <input type="text" class="form-control bg-light border-start-0" id="search-inv"
+               placeholder="Cari nama barang..." oninput="filterInventaris()"/>
+      </div>
+      <span class="text-muted small" id="inv-count"></span>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="text-muted small fw-semibold ps-3">#</th>
+              <th class="text-muted small fw-semibold">Nama Barang</th>
+              <th class="text-muted small fw-semibold">No. Label</th>
+              <th class="text-muted small fw-semibold">Ruangan</th>
+              <th class="text-muted small fw-semibold">Kondisi</th>
+              <th class="text-muted small fw-semibold">QR/Barcode</th>
+              <th class="text-muted small fw-semibold">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="inv-table-body">
+            <tr><td colspan="7" class="text-center text-muted py-4">Memuat data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TAB PENERIMAAN BARANG ── -->
+<div id="tab-penerimaan" class="d-none">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <h5 class="fw-bold mb-0"><i class="bi bi-truck me-2"></i>Penerimaan Barang</h5>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3">
+      <span class="fw-semibold small">Draf Finalisasi — Item Siap Diterima</span>
+    </div>
+    <div class="card-body p-0">
+      <div id="penerimaan-content">
+        <div class="text-center text-muted py-4">Memuat data...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Update Inventaris -->
+<div class="modal fade" id="modalInv" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-bottom">
+        <h6 class="modal-title fw-bold">Update Inventaris</h6>
+        <button type="button" class="btn-close" onclick="closeModalInv()"></button>
+      </div>
+      <div class="modal-body">
+        <div id="inv-modal-alert" class="alert d-none"></div>
+        <div class="mb-3">
+          <label class="form-label small fw-medium">Nama Barang</label>
+          <input type="text" class="form-control bg-light" id="f-inv-name" readonly/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-medium">Nomor Label</label>
+          <input type="text" class="form-control" id="f-inv-label" placeholder="Contoh: INV-2026-001"/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-medium">Path QR / Barcode <span class="text-muted">(opsional)</span></label>
+          <input type="text" class="form-control" id="f-inv-qr" placeholder="Contoh: /uploads/qr/inv001.png"/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-medium">Ruangan</label>
+          <select class="form-select" id="f-inv-room">
+            <option value="">-- Pilih Ruangan --</option>
+          </select>
+        </div>
+        <div class="mb-1">
+          <label class="form-label small fw-medium">Kondisi</label>
+          <select class="form-select" id="f-inv-condition">
+            <option value="baik">Baik</option>
+            <option value="rusak_ringan">Rusak Ringan</option>
+            <option value="rusak_berat">Rusak Berat</option>
+            <option value="dihapus">Dihapus</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer border-top">
+        <button class="btn btn-light btn-sm" onclick="closeModalInv()">Batal</button>
+        <button class="btn btn-primary btn-sm px-4" onclick="saveInv()">Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Penerimaan Barang -->
+<div class="modal fade" id="modalTerima" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-bottom">
+        <h6 class="modal-title fw-bold">Input Penerimaan Barang</h6>
+        <button type="button" class="btn-close" onclick="closeModalTerima()"></button>
+      </div>
+      <div class="modal-body">
+        <div id="terima-modal-alert" class="alert d-none"></div>
+        <div class="mb-3">
+          <label class="form-label small fw-medium">Nama Barang</label>
+          <input type="text" class="form-control bg-light" id="f-terima-name" readonly/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-medium">Sisa Belum Diterima</label>
+          <input type="text" class="form-control bg-light" id="f-terima-sisa" readonly/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-medium">Jumlah Diterima</label>
+          <input type="number" class="form-control" id="f-terima-qty" placeholder="0" min="1"/>
+        </div>
+        <div class="mb-1">
+          <label class="form-label small fw-medium">Tanggal Penerimaan</label>
+          <input type="date" class="form-control" id="f-terima-date"/>
+        </div>
+      </div>
+      <div class="modal-footer border-top">
+        <button class="btn btn-light btn-sm" onclick="closeModalTerima()">Batal</button>
+        <button class="btn btn-success btn-sm px-4" onclick="saveTerima()">Catat Penerimaan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const token   = localStorage.getItem('token');
+  const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+
+  let allInventories = [], allRooms = [], allDrafts = [];
+  let editInvId = null, terimaItemId = null;
+  let bsModalInv, bsModalTerima;
+
+  const kondisiBadge = {
+    baik:         '<span class="badge bg-success">Baik</span>',
+    rusak_ringan: '<span class="badge bg-warning text-dark">Rusak Ringan</span>',
+    rusak_berat:  '<span class="badge bg-danger">Rusak Berat</span>',
+    dihapus:      '<span class="badge bg-secondary">Dihapus</span>',
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    bsModalInv    = new bootstrap.Modal(document.getElementById('modalInv'),    { backdrop: 'static' });
+    bsModalTerima = new bootstrap.Modal(document.getElementById('modalTerima'), { backdrop: 'static' });
+
+    // Sembunyikan tab penerimaan jika bukan staf_admin
+    if (user.role !== 'staf_admin') {
+      document.getElementById('tab-btn-penerimaan').style.display = 'none';
+    }
+
+    loadAll();
+  });
+
+  async function loadAll() {
+    await Promise.all([loadInventaris(), loadRooms(), loadDrafts()]);
+  }
+
+  // ── Load inventaris ──────────────────────────────────────────
+  async function loadInventaris() {
+    try {
+      const res  = await fetch('/api/inventories', { headers });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      allInventories = data.data;
+      renderInventaris(allInventories);
+      document.getElementById('inv-count').textContent = allInventories.length + ' item';
+    } catch (err) {
+      showAlert('alert-top', 'Gagal memuat inventaris: ' + err.message, 'danger');
+    }
+  }
+
+  function renderInventaris(items) {
+    const tbody = document.getElementById('inv-table-body');
+    if (!items.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Belum ada inventaris</td></tr>';
+      return;
+    }
+    tbody.innerHTML = items.map((inv, i) => `
+      <tr>
+        <td class="ps-3 text-muted small">${i + 1}</td>
+        <td class="fw-medium">${inv.item_name}</td>
+        <td>${inv.label_number
+          ? `<code class="small">${inv.label_number}</code>`
+          : '<span class="text-muted fst-italic small">Belum dilabel</span>'}</td>
+        <td class="small">${inv.room_id ? inv.room_id.room_name : '<span class="text-muted">-</span>'}</td>
+        <td>${kondisiBadge[inv.condition_status] || '-'}</td>
+        <td>${inv.qr_barcode_path
+          ? `<span class="badge bg-success-subtle text-success"><i class="bi bi-check-lg"></i> Ada</span>`
+          : '<span class="badge bg-light text-muted border">Belum</span>'}</td>
+        <td>
+          ${user.role === 'staf_admin' ? `
+            <button class="btn btn-sm btn-light" onclick="openEditInv('${inv._id}')">
+              <i class="bi bi-pencil text-primary"></i>
+            </button>
+          ` : ''}
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function filterInventaris() {
+    const q = document.getElementById('search-inv').value.toLowerCase();
+    renderInventaris(allInventories.filter(i =>
+      i.item_name.toLowerCase().includes(q) ||
+      (i.label_number && i.label_number.toLowerCase().includes(q))
+    ));
+  }
+
+  // ── Load ruangan untuk dropdown ──────────────────────────────
+  async function loadRooms() {
+    try {
+      const res  = await fetch('/api/rooms', { headers });
+      const data = await res.json();
+      allRooms   = data.data || [];
+      const sel  = document.getElementById('f-inv-room');
+      allRooms.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r._id;
+        opt.textContent = r.room_name + (r.location ? ` — ${r.location}` : '');
+        sel.appendChild(opt);
+      });
+    } catch (err) {}
+  }
+
+  // ── Load draf finalisasi untuk penerimaan ────────────────────
+  async function loadDrafts() {
+    try {
+      const res    = await fetch('/api/procurement', { headers });
+      const data   = await res.json();
+      allDrafts    = (data.data || []).filter(d => d.status === 'finalized');
+      renderPenerimaan();
+    } catch (err) {}
+  }
+
+  function renderPenerimaan() {
+    const container = document.getElementById('penerimaan-content');
+    if (!allDrafts.length) {
+      container.innerHTML = '<div class="text-center text-muted py-4">Belum ada draf yang difinalisasi</div>';
+      return;
+    }
+
+    container.innerHTML = allDrafts.map(draft => {
+      const approvedItems = draft.items.filter(i => i.approval_status === 'approved');
+      const itemRows = approvedItems.map(item => {
+        const totalReceived = item.receipts
+          ? item.receipts.reduce((sum, r) => sum + r.quantity_received, 0)
+          : 0;
+        const sisa    = item.quantity - totalReceived;
+        const persen  = Math.round((totalReceived / item.quantity) * 100);
+        const selesai = sisa === 0;
+
+        return `
+          <tr>
+            <td class="ps-3 small fw-medium">${item.item_name}</td>
+            <td><span class="badge ${item.item_type === 'inventaris' ? 'bg-info-subtle text-info' : 'bg-warning-subtle text-warning'}">${item.item_type}</span></td>
+            <td class="small">${item.quantity}</td>
+            <td class="small">${totalReceived}</td>
+            <td class="small">${sisa}</td>
+            <td style="min-width:120px">
+              <div class="progress" style="height:6px">
+                <div class="progress-bar ${selesai ? 'bg-success' : 'bg-primary'}"
+                     style="width:${persen}%"></div>
+              </div>
+              <small class="text-muted">${persen}%</small>
+            </td>
+            <td>
+              ${!selesai ? `
+                <button class="btn btn-sm btn-success" onclick="openTerima('${item._id}', '${item.item_name}', ${sisa})">
+                  <i class="bi bi-plus-lg me-1"></i>Terima
+                </button>
+              ` : '<span class="badge bg-success">Lengkap</span>'}
+            </td>
+          </tr>`;
+      }).join('');
+
+      return `
+        <div class="p-3 border-bottom">
+          <div class="fw-semibold mb-2">
+            ${draft.title} <span class="text-muted">(${draft.year})</span>
+            <span class="badge bg-success ms-2" style="font-size:0.7rem">Finalisasi</span>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="text-muted small ps-3">Nama Barang</th>
+                  <th class="text-muted small">Tipe</th>
+                  <th class="text-muted small">Dipesan</th>
+                  <th class="text-muted small">Diterima</th>
+                  <th class="text-muted small">Sisa</th>
+                  <th class="text-muted small">Progress</th>
+                  <th class="text-muted small">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>${itemRows}</tbody>
+            </table>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // ── Modal Update Inventaris ──────────────────────────────────
+  function openEditInv(id) {
+    const inv = allInventories.find(i => i._id === id);
+    if (!inv) return;
+    editInvId = id;
+    document.getElementById('f-inv-name').value      = inv.item_name;
+    document.getElementById('f-inv-label').value     = inv.label_number || '';
+    document.getElementById('f-inv-qr').value        = inv.qr_barcode_path || '';
+    document.getElementById('f-inv-room').value      = inv.room_id?._id || '';
+    document.getElementById('f-inv-condition').value = inv.condition_status;
+    hideAlert('inv-modal-alert');
+    bsModalInv.show();
+  }
+
+  function closeModalInv() { bsModalInv.hide(); }
+
+  async function saveInv() {
+    const label_number    = document.getElementById('f-inv-label').value.trim();
+    const qr_barcode_path = document.getElementById('f-inv-qr').value.trim();
+    const room_id         = document.getElementById('f-inv-room').value;
+    const condition_status = document.getElementById('f-inv-condition').value;
+
+    try {
+      const res  = await fetch(`/api/inventories/${editInvId}`, {
+        method: 'PUT', headers,
+        body: JSON.stringify({ label_number: label_number || null, qr_barcode_path: qr_barcode_path || null, room_id: room_id || null, condition_status })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      closeModalInv();
+      showAlert('alert-top', data.message, 'success');
+      loadInventaris();
+    } catch (err) {
+      showAlert('inv-modal-alert', err.message, 'danger');
+    }
+  }
+
+  // ── Modal Penerimaan Barang ──────────────────────────────────
+  function openTerima(itemId, itemName, sisa) {
+    terimaItemId = itemId;
+    document.getElementById('f-terima-name').value = itemName;
+    document.getElementById('f-terima-sisa').value = sisa + ' pcs';
+    document.getElementById('f-terima-qty').value  = '';
+    document.getElementById('f-terima-date').value = new Date().toISOString().split('T')[0];
+    hideAlert('terima-modal-alert');
+    bsModalTerima.show();
+  }
+
+  function closeModalTerima() { bsModalTerima.hide(); }
+
+  async function saveTerima() {
+    const quantity_received = parseInt(document.getElementById('f-terima-qty').value);
+    const received_date     = document.getElementById('f-terima-date').value;
+
+    if (!quantity_received || quantity_received < 1)
+      return showAlert('terima-modal-alert', 'Jumlah diterima wajib diisi', 'danger');
+    if (!received_date)
+      return showAlert('terima-modal-alert', 'Tanggal penerimaan wajib diisi', 'danger');
+
+    try {
+      const res  = await fetch(`/api/inventories/receive/${terimaItemId}`, {
+        method: 'POST', headers,
+        body: JSON.stringify({ quantity_received, received_date })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      closeModalTerima();
+      showAlert('alert-top', data.message, 'success');
+      await loadDrafts();
+      await loadInventaris();
+    } catch (err) {
+      showAlert('terima-modal-alert', err.message, 'danger');
+    }
+  }
+
+  // ── Tab navigation ───────────────────────────────────────────
+  function showTab(tabId) {
+    ['tab-inventaris', 'tab-penerimaan'].forEach(id => {
+      document.getElementById(id).classList.toggle('d-none', id !== tabId);
+    });
+    document.querySelectorAll('#inv-tabs .nav-link').forEach((btn, i) => {
+      btn.classList.toggle('active', (i === 0 && tabId === 'tab-inventaris') || (i === 1 && tabId === 'tab-penerimaan'));
+    });
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────
+  function showAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.className = `alert alert-${type}`;
+    if (type === 'success') setTimeout(() => el.className = 'alert d-none', 3000);
+  }
+  function hideAlert(id) {
+    document.getElementById(id).className = 'alert d-none';
+  }
+</script>

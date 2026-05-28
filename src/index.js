@@ -59,6 +59,14 @@ app.get('/procurement', (req, res) => {
   res.render('pages/procurement', { title: 'Draf Pengadaan', page: 'procurement' });
 });
 
+//Inventory routes
+const inventoryRoutes = require("./routes/inventoryRoutes");
+app.use("/api/inventories", inventoryRoutes);
+
+app.get('/inventories', (req, res) => {
+  res.render('pages/inventories', { title: 'Inventaris', page: 'inventories' });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server berjalan di port ${PORT}`);
