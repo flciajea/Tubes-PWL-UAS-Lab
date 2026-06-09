@@ -136,25 +136,23 @@
               <option value="jaringan & kelistrikan">Jaringan & Kelistrikan</option>
               <option value="lainnya">Lainnya</option>
             </select>
-          </div>bhp-table-row">
-          <div class="bhp-item-name">${bhp.item_name}</div>
-          <div class="bhp-category">${bhp.category}</div>
-          <div class="bhp-quantity">${bhp.quantity}</div>
-          <div>${bhp.unit}</div>
-          <div>${bhp.reorder_level}</div>
-          <div>
-            <span class="bhp-status-badge status-${bhp.stock_status}">
-              ${bhp.stock_status === 'normal' ? 'Normal' : bhp.stock_status === 'rendah' ? 'Rendah' : 'Habis'}
-            </span>
-          </div>
-          <div class="bhp-actions">
-            <button class="btn btn-sm btn-outline-primary" onclick="editBhpStock('${bhp._id}')">
-              <i class="bi bi-pencil"></i> Edit
-            </button>
-          </div>
-        </div>
-      `).join('') : '<div class="empty-state">Tidak ada data stok BHP
-        <div class="modal-footer">
+            <div class="mb-3">
+  <label class="form-label">Unit</label>
+  <input type="text" class="form-control" id="editUnit" placeholder="Contoh: pcs, rim, liter" required/>
+</div>
+<div class="mb-3">
+  <label class="form-label">Jumlah Stok</label>
+  <input type="number" class="form-control" id="editQuantity" min="0" required/>
+</div>
+<div class="mb-3">
+  <label class="form-label">Reorder Level</label>
+  <input type="number" class="form-control" id="editReorderLevel" min="0"/>
+</div>
+<div class="mb-3">
+  <label class="form-label">Catatan</label>
+  <textarea class="form-control" id="editNotes" rows="2"></textarea>
+</div>
+          
           <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
           <button type="submit" class="btn btn-primary btn-sm">Update</button>
         </div>

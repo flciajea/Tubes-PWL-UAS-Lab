@@ -1,5 +1,8 @@
 const Inventory        = require("../models/Inventory");
 const ProcurementDraft = require("../models/ProcurementDraft");
+const path      = require("path");
+const fs        = require("fs");
+const QRCode    = require("qrcode");
 
 // ── Get semua inventaris ─────────────────────────────────────
 const getAllInventories = async (req, res) => {
@@ -28,14 +31,31 @@ const getInventoryById = async (req, res) => {
 // ── Update label & QR (Staf Admin) ──────────────────────────
 const updateInventory = async (req, res) => {
   try {
-    const { label_number, qr_barcode_path, room_id, condition_status } = req.body;
+    const { label_number, room_id, condition_status } = req.body;
     const inventory = await Inventory.findById(req.params.id);
     if (!inventory) return res.status(404).json({ message: "Inventaris tidak ditemukan" });
 
-    if (label_number    !== undefined) inventory.label_number    = label_number;
-    if (qr_barcode_path !== undefined) inventory.qr_barcode_path = qr_barcode_path;
-    if (room_id         !== undefined) inventory.room_id         = room_id || null;
+    if (label_number     !== undefined) inventory.label_number     = label_number;
+    if (room_id          !== undefined) inventory.room_id          = room_id || null;
     if (condition_status !== undefined) inventory.condition_status = condition_status;
+
+    // Generate QR otomatis jika ada label_number
+    if (label_number) {
+      const qrDir  = path.join(__dirname, "../public/qrcodes");
+      if (!fs.existsSync(qrDir)) fs.mkdirSync(qrDir, { recursive: true });
+
+      const filename = `qr-${inventory._id}.png`;
+      const filepath = path.join(qrDir, filename);
+
+      const qrData = JSON.stringify({
+        id:    inventory._id,
+        label: label_number,
+        nama:  inventory.item_name,
+      });
+
+      await QRCode.toFile(filepath, qrData, { width: 300 });
+      inventory.qr_barcode_path = `/qrcodes/${filename}`;
+    }
 
     await inventory.save();
     res.json({ message: "Inventaris berhasil diupdate", data: inventory });

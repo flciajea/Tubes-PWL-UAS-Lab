@@ -209,13 +209,13 @@
   <!-- Staf Admin only -->
   <div id="menu-staf_admin" style="display:none">
     <div class="menu-label mt-2">Pengadaan</div>
-    <a href="/procurement" class="menu-item <%= (locals.page === 'procurement') ? 'active' : '' %>">
-      <i class="bi bi-cart-check"></i> Penerimaan Barang
-    </a>
-    <div class="menu-label mt-2">Aset</div>
-    <a href="/inventories" class="menu-item <%= (locals.page === 'inventories') ? 'active' : '' %>">
-      <i class="bi bi-box-seam"></i> Inventaris
-    </a>
+      <a href="/procurement" class="menu-item <%= (locals.page === 'procurement') ? 'active' : '' %>">
+        <i class="bi bi-clipboard-check"></i> Draf Pengadaan
+      </a>
+      <div class="menu-label mt-2">Aset</div>
+      <a href="/inventories" class="menu-item <%= (locals.page === 'inventories') ? 'active' : '' %>">
+        <i class="bi bi-box-seam"></i> Inventaris & Penerimaan
+      </a>
   </div>
 
   <!-- Staf Lab only -->
