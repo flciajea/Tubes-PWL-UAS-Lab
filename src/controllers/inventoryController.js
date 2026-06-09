@@ -3,6 +3,7 @@ const ProcurementDraft = require("../models/ProcurementDraft");
 const path      = require("path");
 const fs        = require("fs");
 const QRCode    = require("qrcode");
+const BhpStock = require('../models/BhpStock');
 
 // ── Get semua inventaris ─────────────────────────────────────
 const getAllInventories = async (req, res) => {
@@ -98,6 +99,25 @@ const addReceipt = async (req, res) => {
 
     // Jika item tipe inventaris, buat entry di inventories
     if (item.item_type === "inventaris") {
+      // Auto-update stok BHP saat penerimaan barang BHP
+if (item.item_type === 'bhp') {
+  const bhpStock = await BhpStock.findOne({
+    item_name: { $regex: new RegExp(`^${item.item_name}$`, 'i') }
+  });
+
+  if (bhpStock) {
+    bhpStock.quantity += quantity_received;
+    await bhpStock.save();
+  } else {
+    await BhpStock.create({
+      item_name:     item.item_name,
+      category:      'lainnya',
+      unit:          'pcs',
+      quantity:      quantity_received,
+      reorder_level: 5,
+    });
+  }
+}
       for (let i = 0; i < quantity_received; i++) {
         await Inventory.create({
           procurement_item_id: item._id,

@@ -16,8 +16,8 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(expressLayouts);
 app.set('layout', 'layouts/main');
-app.set('layout extractScripts', true);
-app.set('layout extractStyles', true);
+// Tambah sementara setelah app.set('views', ...)
+console.log('Views dir:', app.get('views'));
 
 // Koneksi database
 connectDB();

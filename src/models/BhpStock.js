@@ -44,6 +44,8 @@ const bhpStockSchema = new mongoose.Schema(
   }
 );
 
+
+
 // Virtual untuk status stok
 bhpStockSchema.virtual("stock_status").get(function () {
   if (this.quantity === 0) return "habis";
